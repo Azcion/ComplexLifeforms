@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ComplexLifeforms {
+﻿namespace ComplexLifeforms {
 
 	public class Lifeform {
 

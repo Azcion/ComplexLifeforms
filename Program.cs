@@ -59,6 +59,7 @@ namespace ComplexLifeforms {
 			Console.WriteLine(_creatures.First().ToString('|', true));
 			Console.WriteLine(_creatures.Last().ToString('|', true));
 			Console.WriteLine();
+			Console.WriteLine(MoodManager.ToStringHeader('|'));
 			Console.WriteLine(_creatures.First().Mood.ToString('|'));
 			Console.WriteLine(_creatures.Last().Mood.ToString('|'));
 

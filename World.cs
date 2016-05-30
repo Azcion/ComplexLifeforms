@@ -1,6 +1,4 @@
-﻿using System.Security.Authentication.ExtendedProtection;
-
-namespace ComplexLifeforms {
+﻿namespace ComplexLifeforms {
 
 	public class World {
 

@@ -5,7 +5,9 @@ namespace ComplexLifeforms {
 
 	public class MoodManager {
 
+		/// <summary>Represents the current strongest urge.</summary>
 		public Urge Urge { get; private set; }
+		/// <summary>Represents the current strongest emotion.</summary>
 		public Emotion Emotion { get; private set; }
 
 		public int[] UrgeValues { get; private set;}
@@ -81,6 +83,93 @@ namespace ComplexLifeforms {
 			}
 		}
 
+		internal void Action (Urge action) { // todo change to variables
+			int iaction = (int) action;
+			int[] indexes = EdgeIndexes(UrgeValues);
+			int maxA = indexes[0];
+			int maxB = indexes[1];
+			int minA = indexes[2];
+			int minB = indexes[3];
+
+			switch (action) {
+				case Urge.Eat:
+				case Urge.Drink:
+					if (iaction == maxA) {
+						// highest
+						EmotionValues[(int) Emotion.Joy] += 10;
+						EmotionValues[(int) Emotion.Surprise] += 5;
+						EmotionValues[(int) Emotion.Trust] += 2;
+					} else if (iaction == maxB) {
+						// second highest
+						EmotionValues[(int) Emotion.Joy] += 5;
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+					} else if (iaction == minA) {
+						// lowest
+						EmotionValues[(int) Emotion.Disgust] += 10;
+						EmotionValues[(int) Emotion.Sadness] += 5;
+						EmotionValues[(int) Emotion.Anger] += 2;
+					} else if (iaction == minB) {
+						// second lowest
+						EmotionValues[(int) Emotion.Disgust] += 5;
+						EmotionValues[(int) Emotion.Sadness] += 2;
+					} else {
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Sadness] += 2;
+					}
+					break;
+				case Urge.Excrete:
+				case Urge.Reproduce:
+					if (iaction == maxA) {  // highest
+						EmotionValues[(int) Emotion.Joy] += 10;
+						EmotionValues[(int) Emotion.Trust] += 5;
+						EmotionValues[(int) Emotion.Surprise] += 2;
+					} else
+					if (iaction == maxB) {  // second highest
+						EmotionValues[(int) Emotion.Joy] += 5;
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+					} else
+					if (iaction == minA) {  // lowest
+						EmotionValues[(int) Emotion.Disgust] += 10;
+						EmotionValues[(int) Emotion.Anger] += 5;
+						EmotionValues[(int) Emotion.Fear] += 2;
+					} else
+					if (iaction == minB) {  // second lowest
+						EmotionValues[(int) Emotion.Disgust] += 5;
+						EmotionValues[(int) Emotion.Anger] += 2;
+					} else {
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Sadness] += 2;
+					}
+					break;
+				case Urge.Sleep:
+				case Urge.Heal:
+					if (iaction == maxA) {  // highest
+						EmotionValues[(int) Emotion.Joy] += 10;
+						EmotionValues[(int) Emotion.Fear] += 5;
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+					} else
+					if (iaction == maxB) {  // second highest
+						EmotionValues[(int) Emotion.Fear] += 5;
+						EmotionValues[(int) Emotion.Joy] += 2;
+					} else
+					if (iaction == minA) {  // lowest
+						EmotionValues[(int) Emotion.Fear] += 10;
+						EmotionValues[(int) Emotion.Anticipation] += 5;
+						EmotionValues[(int) Emotion.Anger] += 2;
+					} else
+					if (iaction == minB) {  // second lowest
+						EmotionValues[(int) Emotion.Fear] += 5;
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+					} else {
+						EmotionValues[(int) Emotion.Fear] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 2;
+					}
+					break;
+			}
+
+			UrgeValues[iaction] -= 5;
+		}
+
 		public void ApplyTiers (Tier[] urgeBias, Tier[] emotionBias) {
 			if (urgeBias.Length != URGE_COUNT || emotionBias.Length != EMOTION_COUNT) {
 				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Length} second:{emotionBias.Length}");
@@ -110,6 +199,41 @@ namespace ComplexLifeforms {
 			}
 
 			return data;
+		}
+
+		public static int[] EdgeIndexes<T> (IEnumerable<T> array) where T : IComparable<T> {
+			int maxAIndex = -1;
+			int maxBIndex = -1;
+			int minAIndex = -1;
+			int minBIndex = -1;
+			T maxAValue = default(T);
+			T maxBValue = default(T);
+			T minAValue = default(T);
+			T minBValue = default(T);
+
+			int index = 0;
+			foreach (T value in array) {
+				if (value.CompareTo(maxAValue) > 0 || maxAIndex == -1) {
+					maxAIndex = index;
+					maxAValue = value;
+				}
+				if (value.CompareTo(maxBValue) > 0 || maxBIndex == -1) {
+					maxBIndex = index;
+					maxBValue = value;
+				}
+				if (value.CompareTo(minAValue) < 0 || minBIndex == -1) {
+					minAIndex = index;
+					minAValue = value;
+				}
+				if (value.CompareTo(minBValue) < 0 || minBIndex == -1) {
+					minBIndex = index;
+					minBValue = value;
+				}
+				++index;
+			}
+
+			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
+			return indexes;
 		}
 
 		public static int MaxIndex<T> (IEnumerable<T> array) where T : IComparable<T> {
