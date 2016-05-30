@@ -133,6 +133,8 @@
 
 			World.Reclaim(HealCost, HealCost);
 
+			Mood.Action(Urge.Heal);
+
 			Food -= HealCost;
 			Water -= HealCost;
 			++HealCount;
@@ -167,6 +169,8 @@
 			World.UseFood(deltaFood);
 			World.Reclaim(0, -deltaWater);
 
+			Mood.Action(Urge.Eat);
+
 			Hp += deltaHp;
 			Food += deltaFood;
 			Water += deltaWater;
@@ -193,6 +197,8 @@
 			}
 
 			World.UseWater(deltaWater);
+
+			Mood.Action(Urge.Drink);
 
 			Hp += deltaHp;
 			Water += deltaWater;

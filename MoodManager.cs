@@ -201,6 +201,41 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
+		public static string ToStringHeader (char separator=' ') {
+			char s = separator;
+			string data = "";
+
+			bool first = true;
+			foreach (string urge in Enum.GetNames(typeof(Urge))) {
+				if (first) {
+					data += $"{Truncate(urge, 4),-4}";
+					first = false;
+					continue;
+				}
+
+				data += $"{s}{Truncate(urge, 4),-4}";
+			}
+
+			data += s;
+			foreach (string emotion in Enum.GetNames(typeof(Emotion))) {
+				data += $"{s}{Truncate(emotion, 4),-4}";
+			}
+
+			return data;
+		}
+
+		public static string Truncate (string value, int length) {
+			if (string.IsNullOrEmpty(value)) {
+				return value;
+			}
+
+			if (value.Length <= length) {
+				return value;
+			}
+
+			return value.Substring(0, length);
+		}
+
 		public static int[] EdgeIndexes<T> (IEnumerable<T> array) where T : IComparable<T> {
 			int maxAIndex = -1;
 			int maxBIndex = -1;
