@@ -170,6 +170,10 @@ namespace ComplexLifeforms {
 			UrgeValues[iaction] -= 5;
 		}
 
+		public void AffectUrge (Urge urge, int delta) {
+			UrgeValues[(int) urge] += delta;
+		}
+
 		public void ApplyTiers (Tier[] urgeBias, Tier[] emotionBias) {
 			if (urgeBias.Length != URGE_COUNT || emotionBias.Length != EMOTION_COUNT) {
 				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Length} second:{emotionBias.Length}");

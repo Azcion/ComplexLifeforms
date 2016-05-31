@@ -97,6 +97,9 @@ namespace ComplexLifeforms {
 					if (Food > EatThreshold) {
 						deltaHp += HpDrain / 2;
 						deltaFood -= FoodDrain * 2;
+						
+						Mood.AffectUrge(Urge.Eat, -1);
+						Mood.Action(Urge.Excrete);
 					} else {
 						deltaHp -= HpDrain / 2;
 						deltaFood -= FoodDrain;
@@ -114,6 +117,9 @@ namespace ComplexLifeforms {
 					if (Water > DrinkThreshold) {
 						deltaHp += HpDrain / 2;
 						deltaWater -= WaterDrain * 2;
+
+						Mood.AffectUrge(Urge.Drink, -1);
+						Mood.Action(Urge.Excrete);
 					} else {
 						deltaHp -= HpDrain / 2;
 						deltaWater -= WaterDrain;
@@ -144,10 +150,12 @@ namespace ComplexLifeforms {
 		private void Heal () {
 			bool valid = true;
 			if (Food <= HealCost) {
+				Mood.AffectUrge(Urge.Eat, 1);
 				valid = false;
 			}
 
 			if (Water <= HealCost) {
+				Mood.AffectUrge(Urge.Drink, 1);
 				valid = false;
 			}
 
@@ -188,6 +196,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (Water <= -deltaWater) {
+				Mood.AffectUrge(Urge.Drink, 1);
 				return;
 			}
 
@@ -204,6 +213,8 @@ namespace ComplexLifeforms {
 			if (Food > Init.FoodScale * World.Init.BaseFood) {
 				Hp -= HpDrain * 4;
 
+				Mood.AffectUrge(Urge.Eat, -2);
+				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
 			if (Hp <= 0) {
@@ -241,6 +252,8 @@ namespace ComplexLifeforms {
 			if (Water > Init.WaterScale * World.Init.BaseWater) {
 				Hp -= HpDrain * 4;
 
+				Mood.AffectUrge(Urge.Drink, -2);
+				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
 			if (Hp <= 0) {
