@@ -1,9 +1,14 @@
-﻿namespace ComplexLifeforms {
+﻿using System;
+
+namespace ComplexLifeforms {
 
 	public class Lifeform {
 
-		public readonly World World;
+		/// <summary>Constructor parameters.</summary>
 		public readonly SInitLifeform Init;
+
+		/// <summary>World in which resources will be exchanged.</summary>
+		public readonly World World;
 		public readonly MoodManager Mood;
 
 		public readonly double HealCost;

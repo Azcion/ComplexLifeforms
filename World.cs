@@ -2,9 +2,12 @@
 
 	public class World {
 
+		/// <summary>Constructor parameters.</summary>
 		public SInitWorld Init;
 
+		/// <summary>Amount of available food in the world.</summary>
 		public double Food { get; private set; }
+		/// <summary>Amount of available water in the world.</summary>
 		public double Water { get; private set; }
 
 		public int FoodUseCount { get; private set; }
@@ -22,12 +25,17 @@
 			Water = Init.StartingWater;
 		}
 
-		public void Decompose (Lifeform creature) {
-			// Return creature's remaining resources, as well as those making up its body
-			Food += creature.Food + creature.Init.FoodScale * Init.BaseFood;
-			Water += creature.Water + creature.Init.WaterScale * Init.BaseWater;
+		/// <summary>
+		/// Return lifeform's remaining resources to the world, as well as those making up its body.
+		/// </summary>
+		public void Decompose (Lifeform lifeform) {
+			Food += lifeform.Food + lifeform.Init.FoodScale * Init.BaseFood;
+			Water += lifeform.Water + lifeform.Init.WaterScale * Init.BaseWater;
 		}
 
+		/// <summary>
+		/// Return the specified amount of food and water to the world.
+		/// </summary>
 		public void Reclaim (double food, double water) {
 			if (food < 0 || water < 0) {
 				System.Console.WriteLine($"Food and water can not be negative. f:{food} w:{water}");
@@ -38,6 +46,9 @@
 			Water += water;
 		}
 
+		/// <summary>
+		/// Reduce the specified amount of food from the world.
+		/// </summary>
 		public void UseFood (double amount) {
 			if (amount < 0) {
 				System.Console.WriteLine($"Food can not be negative. f:{amount}");
@@ -52,6 +63,10 @@
 			++FoodUseCount;
 		}
 
+		/// <summary>
+		/// Reduce the specified amount of water from the world.
+		/// </summary>
+		/// <param name="amount"></param>
 		public void UseWater (double amount) {
 			if (amount < 0) {
 				System.Console.WriteLine($"Water can not be negative. w:{amount}");
@@ -68,7 +83,7 @@
 
 		public string ToString (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"{Init.Size,10}{s}{Food,10}{s}{Water,10}";
+			string data = $"{Init.Size,10}{s}{(int)Food,10}{s}{(int)Water,10}";
 
 			if (extended) {
 				data += $"{s}{FoodUseCount,7}{s}{WaterUseCount,7}";
