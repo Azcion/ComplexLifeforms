@@ -69,7 +69,7 @@
 			ProcessBodilyFunctions();
 			Mood.Update();
 
-			if (Hp < HealThreshold) {
+			if (Hp > 0 && Hp < HealThreshold) {
 				Heal();
 			}
 
@@ -85,8 +85,13 @@
 
 			if (Food > 0) {
 				if (Food > FoodDrain) {
-					deltaHp -= HpDrain;
-					deltaFood -= FoodDrain;
+					if (Food > EatThreshold) {
+						deltaHp += HpDrain / 2;
+						deltaFood -= FoodDrain * 2;
+					} else {
+						deltaHp -= HpDrain / 2;
+						deltaFood -= FoodDrain;
+					}
 				} else {
 					deltaHp -= HpDrain * 5;
 					deltaFood -= Food;
@@ -127,7 +132,16 @@
 		}
 
 		private void Heal () {
-			if (Food <= 0 || Water <= 0 || Food <= HealCost || Water <= HealCost) {
+			bool valid = true;
+			if (Food <= HealCost) {
+				valid = false;
+			}
+
+			if (Water <= HealCost) {
+				valid = false;
+			}
+
+			if (!valid) {
 				return;
 			}
 
@@ -135,6 +149,7 @@
 
 			Mood.Action(Urge.Heal);
 
+			Hp += HealAmount;
 			Food -= HealCost;
 			Water -= HealCost;
 			++HealCount;
