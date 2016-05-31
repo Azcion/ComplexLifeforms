@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace ComplexLifeforms {
@@ -10,24 +9,24 @@ namespace ComplexLifeforms {
 		private static Random _random;
 
 		private static World _world;
-		private static Lifeform[] _creatures;
+		private static Lifeform[] _lifeforms;
 
 		private static void Main () {
 			_random = new Random();
 			_world = new World(5000000);
-			_creatures = new Lifeform[100];
+			_lifeforms = new Lifeform[10000];
 
-			for (int i = 0; i < _creatures.Length; ++i) {
-				_creatures[i] = new Lifeform(_world);
+			for (int i = 0; i < _lifeforms.Length; ++i) {
+				_lifeforms[i] = new Lifeform(_world, _random, healAmountScale:0.5);
 			}
 
 			Console.WriteLine(World.ToStringHeader('|', true));
 			Console.WriteLine(_world.ToString('|', true));
 
-			for (int i = 0; i < 5000; ++i) {
+			for (int i = 0; i < 550; ++i) {
 				int deadCount = 0;
 				
-				foreach (Lifeform c in _creatures) {
+				foreach (Lifeform c in _lifeforms) {
 					if (!c.Alive) {
 						++deadCount;
 						continue;
@@ -44,12 +43,12 @@ namespace ComplexLifeforms {
 					c.Update();
 				}
 
-				if (deadCount == _creatures.Length) {
+				if (deadCount == _lifeforms.Length) {
 					break;
 				}
 			}
 
-			_creatures = _creatures.OrderByDescending(c => c.Age).ToArray();
+			_lifeforms = _lifeforms.OrderByDescending(c => c.Age).ToArray();
 
 			Console.WriteLine(_world.ToString('|', true));
 			Console.WriteLine();
@@ -64,15 +63,15 @@ namespace ComplexLifeforms {
 			Console.WriteLine(_creatures.Last().Mood.ToString('|'));
 
 			// standard deviation of age
-			int[] ages = new int[_creatures.Length];
+			int[] ages = new int[_lifeforms.Length];
 
 			for (int i = 0; i < _creatures.Length; ++i) {
 				ages[i] = _creatures[i].Age;
 			}
 
-			using (StreamWriter file = new StreamWriter("ages.csv")) {
+			/*using (System.IO.StreamWriter file = new StreamWriter("ages.csv")) {
 				file.Write(string.Join(",", ages));
-			}
+			}*/
 
 			double[] res = StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]}\nsdev: {res[0]}");

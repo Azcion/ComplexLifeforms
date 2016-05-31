@@ -21,8 +21,8 @@ namespace ComplexLifeforms {
 		private static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		private static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
-		public MoodManager () {
-			_random = new Random();
+		public MoodManager (Random random=null) {
+			_random = random ?? new Random();
 
 			UrgeValues = new int[URGE_COUNT];
 			EmotionValues = new int[EMOTION_COUNT];
@@ -96,73 +96,73 @@ namespace ComplexLifeforms {
 				case Urge.Drink:
 					if (iaction == maxA) {
 						// highest
-						EmotionValues[(int) Emotion.Joy] += 10;
-						EmotionValues[(int) Emotion.Surprise] += 5;
-						EmotionValues[(int) Emotion.Trust] += 2;
+						EmotionValues[(int) Emotion.Joy] += 5;
+						EmotionValues[(int) Emotion.Surprise] += 2;
+						EmotionValues[(int) Emotion.Trust] += 1;
 					} else if (iaction == maxB) {
 						// second highest
-						EmotionValues[(int) Emotion.Joy] += 5;
-						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Joy] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
 					} else if (iaction == minA) {
 						// lowest
-						EmotionValues[(int) Emotion.Disgust] += 10;
-						EmotionValues[(int) Emotion.Sadness] += 5;
-						EmotionValues[(int) Emotion.Anger] += 2;
-					} else if (iaction == minB) {
-						// second lowest
 						EmotionValues[(int) Emotion.Disgust] += 5;
 						EmotionValues[(int) Emotion.Sadness] += 2;
+						EmotionValues[(int) Emotion.Anger] += 1;
+					} else if (iaction == minB) {
+						// second lowest
+						EmotionValues[(int) Emotion.Disgust] += 2;
+						EmotionValues[(int) Emotion.Sadness] += 1;
 					} else {
-						EmotionValues[(int) Emotion.Anticipation] += 2;
-						EmotionValues[(int) Emotion.Sadness] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
+						EmotionValues[(int) Emotion.Sadness] += 1;
 					}
 					break;
 				case Urge.Excrete:
 				case Urge.Reproduce:
 					if (iaction == maxA) {  // highest
-						EmotionValues[(int) Emotion.Joy] += 10;
-						EmotionValues[(int) Emotion.Trust] += 5;
-						EmotionValues[(int) Emotion.Surprise] += 2;
+						EmotionValues[(int) Emotion.Joy] += 5;
+						EmotionValues[(int) Emotion.Trust] += 2;
+						EmotionValues[(int) Emotion.Surprise] += 1;
 					} else
 					if (iaction == maxB) {  // second highest
-						EmotionValues[(int) Emotion.Joy] += 5;
-						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Joy] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
 					} else
 					if (iaction == minA) {  // lowest
-						EmotionValues[(int) Emotion.Disgust] += 10;
-						EmotionValues[(int) Emotion.Anger] += 5;
-						EmotionValues[(int) Emotion.Fear] += 2;
-					} else
-					if (iaction == minB) {  // second lowest
 						EmotionValues[(int) Emotion.Disgust] += 5;
 						EmotionValues[(int) Emotion.Anger] += 2;
+						EmotionValues[(int) Emotion.Fear] += 1;
+					} else
+					if (iaction == minB) {  // second lowest
+						EmotionValues[(int) Emotion.Disgust] += 2;
+						EmotionValues[(int) Emotion.Anger] += 1;
 					} else {
-						EmotionValues[(int) Emotion.Anticipation] += 2;
-						EmotionValues[(int) Emotion.Sadness] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
+						EmotionValues[(int) Emotion.Sadness] += 1;
 					}
 					break;
 				case Urge.Sleep:
 				case Urge.Heal:
 					if (iaction == maxA) {  // highest
-						EmotionValues[(int) Emotion.Joy] += 10;
-						EmotionValues[(int) Emotion.Fear] += 5;
-						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Joy] += 5;
+						EmotionValues[(int) Emotion.Fear] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
 					} else
 					if (iaction == maxB) {  // second highest
-						EmotionValues[(int) Emotion.Fear] += 5;
-						EmotionValues[(int) Emotion.Joy] += 2;
+						EmotionValues[(int) Emotion.Fear] += 2;
+						EmotionValues[(int) Emotion.Joy] += 1;
 					} else
 					if (iaction == minA) {  // lowest
-						EmotionValues[(int) Emotion.Fear] += 10;
-						EmotionValues[(int) Emotion.Anticipation] += 5;
-						EmotionValues[(int) Emotion.Anger] += 2;
-					} else
-					if (iaction == minB) {  // second lowest
 						EmotionValues[(int) Emotion.Fear] += 5;
 						EmotionValues[(int) Emotion.Anticipation] += 2;
-					} else {
+						EmotionValues[(int) Emotion.Anger] += 1;
+					} else
+					if (iaction == minB) {  // second lowest
 						EmotionValues[(int) Emotion.Fear] += 2;
-						EmotionValues[(int) Emotion.Anticipation] += 2;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
+					} else {
+						EmotionValues[(int) Emotion.Fear] += 1;
+						EmotionValues[(int) Emotion.Anticipation] += 1;
 					}
 					break;
 			}

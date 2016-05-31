@@ -34,7 +34,7 @@ namespace ComplexLifeforms {
 		public int EatCount { get; private set; }
 		public int DrinkCount { get; private set; }
 
-		public Lifeform (World world, 
+		public Lifeform (World world, Random random=null,
 				double hpScale=1.0, double foodScale=1.0, double waterScale=1.0,
 				double healCostScale=1.0, double healAmountScale=1.0,
 				double hpDrainScale=1.0, double foodDrainScale=1.0, double waterDrainScale=1.0,
@@ -44,7 +44,7 @@ namespace ComplexLifeforms {
 			Init = new SInitLifeform(hpScale, foodScale, waterScale, healCostScale,
 					healAmountScale, hpDrainScale, foodDrainScale, waterDrainScale,
 					healThreshold, eatThreshold, drinkThreshold);
-			Mood = new MoodManager();
+			Mood = new MoodManager(random);
 
 			SInitWorld init = world.Init;
 
