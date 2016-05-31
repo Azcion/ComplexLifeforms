@@ -48,32 +48,34 @@ namespace ComplexLifeforms {
 				}
 			}
 
-			_lifeforms = _lifeforms.OrderByDescending(c => c.Age).ToArray();
-
 			Console.WriteLine(_world.ToString('|', true));
 			Console.WriteLine();
 
 			// oldest and youngest four
+			_lifeforms = _lifeforms.OrderByDescending(c => c.Age).ToArray();
+
 			Console.WriteLine(Lifeform.ToStringHeader('|', true));
-			Console.WriteLine(_lifeforms[0].ToString('|', true));
-			Console.WriteLine(_lifeforms[1].ToString('|', true));
-			Console.WriteLine(_lifeforms[2].ToString('|', true));
-			Console.WriteLine(_lifeforms[3].ToString('|', true));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 4].ToString('|', true));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 3].ToString('|', true));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 2].ToString('|', true));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 1].ToString('|', true));
+
+			for (int i = 0; i < 4; ++i) {
+				Console.WriteLine(_lifeforms[i].ToString('|', true));
+			}
+
+			for (int i = 1; i < 5; ++i) {
+				Console.WriteLine(_lifeforms[_lifeforms.Length - i].ToString('|', true));
+			}
+			
 			Console.WriteLine();
 			Console.WriteLine(MoodManager.ToStringHeader('|'));
-			Console.WriteLine(_lifeforms[0].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[1].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[2].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[3].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 4].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 3].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 2].Mood.ToString('|'));
-			Console.WriteLine(_lifeforms[_lifeforms.Length - 1].Mood.ToString('|'));
 
+			for (int i = 0; i < 4; ++i) {
+				Console.WriteLine(_lifeforms[i].Mood.ToString('|'));
+			}
+
+			for (int i = 1; i < 5; ++i) {
+				Console.WriteLine(_lifeforms[_lifeforms.Length - i].Mood.ToString('|'));
+			}
+
+			// cause of death
 			int[] cause = new int[5];
 
 			foreach (Lifeform lf in _lifeforms) {

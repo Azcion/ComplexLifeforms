@@ -13,26 +13,33 @@
 
 		public readonly double HealCost;
 		public readonly double HealAmount;
+
 		public readonly double HpDrain;
+		public readonly double EnergyDrain;
 		public readonly double FoodDrain;
 		public readonly double WaterDrain;
 
-		public SInitWorld (int s, double sf, double sw, int bh, int be, int bf, int bw,
-				double hc, double ha, double hd, double fd, double wd) {
-			Size = s;
-			StartingFood = s * sf;
-			StartingWater = s * sw;
+		public SInitWorld (int size, double startingFood, double startingWater,
+				int baseHp, int baseEnergy, int baseFood, int baseWater,
+				double healCost, double healAmount,
+				double hpDrain, double energyDrain,
+				double foodDrain, double waterDrain) {
+			Size = size;
+			StartingFood = size * startingFood;
+			StartingWater = size * startingWater;
 
-			BaseHp = bh;
-			BaseEnergy = be;
-			BaseFood = bf;
-			BaseWater = bw;
+			BaseHp = baseHp;
+			BaseEnergy = baseEnergy;
+			BaseFood = baseFood;
+			BaseWater = baseWater;
 
-			HealCost = hc;
-			HealAmount = ha;
-			HpDrain = hd;
-			FoodDrain = fd;
-			WaterDrain = wd;
+			HealCost = healCost;
+			HealAmount = healAmount;
+
+			HpDrain = hpDrain;
+			EnergyDrain = energyDrain;
+			FoodDrain = foodDrain;
+			WaterDrain = waterDrain;
 		}
 
 	}

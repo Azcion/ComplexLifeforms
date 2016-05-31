@@ -13,11 +13,14 @@ namespace ComplexLifeforms {
 
 		public readonly double HealCost;
 		public readonly double HealAmount;
+
 		public readonly double HpDrain;
+		public readonly double EnergyDrain;
 		public readonly double FoodDrain;
 		public readonly double WaterDrain;
 
 		public readonly double HealThreshold;
+		public readonly double SleepThreshold;
 		public readonly double EatThreshold;
 		public readonly double DrinkThreshold;
 
@@ -25,6 +28,7 @@ namespace ComplexLifeforms {
 		public readonly int Id;
 
 		public bool Alive { get; private set; }
+		public bool Asleep { get; private set; }
 		public DeathBy DeathBy { get; private set; }
 
 		public double Hp { get; private set; }
@@ -34,6 +38,7 @@ namespace ComplexLifeforms {
 
 		public int Age { get; private set; }
 		public int HealCount { get; private set; }
+		public int SleepCount { get; private set; }
 		public int EatCount { get; private set; }
 		public int DrinkCount { get; private set; }
 
@@ -75,10 +80,12 @@ namespace ComplexLifeforms {
 			HealCost = w.HealCost * healCostScale;
 			HealAmount = w.HealAmount * healAmountScale;
 			HpDrain = w.HpDrain * hpDrainScale;
+			EnergyDrain = w.EnergyDrain * energyDrainScale;
 			FoodDrain = w.FoodDrain * foodDrainScale;
 			WaterDrain = w.WaterDrain * waterDrainScale;
 
 			Alive = true;
+			Asleep = false;
 			DeathBy = DeathBy.None;
 
 			Hp = w.BaseHp * hpScale;
@@ -87,6 +94,7 @@ namespace ComplexLifeforms {
 			Water = w.BaseWater * waterScale;
 
 			HealThreshold = Hp * healThreshold;
+			SleepThreshold = Energy * sleepThreshold;
 			EatThreshold = Food * eatThreshold;
 			DrinkThreshold = Water * drinkThreshold;
 		}
@@ -98,12 +106,30 @@ namespace ComplexLifeforms {
 
 			++Age;
 
+			if (Asleep) {
+				Hp += HpDrain / 10;
+				Energy += EnergyDrain * 5;
+				Food -= FoodDrain / 10;
+				Water -= WaterDrain / 10;
+				++SleepCount;
+
+				if (Energy >= World.Init.BaseEnergy * Init.EnergyScale) {
+					Asleep = false;
+				}
+			}
+
 			ProcessBodilyFunctions();
 			Mood.Update();
 
-			if (Hp > 0 && Hp < HealThreshold) {
-				Heal();
+			if (Energy < SleepThreshold) {
+				if (Energy < 0) {
+					Sleep(true);
+				}
+
+				Sleep();
 			}
+
+			Heal();
 
 			if (Hp < 0) {
 				Kill();
@@ -112,6 +138,7 @@ namespace ComplexLifeforms {
 
 		private void ProcessBodilyFunctions () {
 			double deltaHp = 0;
+			double deltaEnergy = 0;
 			double deltaFood = 0;
 			double deltaWater = 0;
 
@@ -119,45 +146,78 @@ namespace ComplexLifeforms {
 				if (Food > FoodDrain) {
 					if (Food > EatThreshold) {
 						deltaHp += HpDrain / 2;
-						deltaFood -= FoodDrain * 2;
-						
-						Mood.AffectUrge(Urge.Eat, -1);
-						Mood.Action(Urge.Excrete);
+
+						if (!Asleep) {
+							deltaEnergy -= EnergyDrain * 2;
+							deltaFood -= FoodDrain * 2;
+
+							Mood.AffectUrge(Urge.Eat, -1);
+							Mood.Action(Urge.Excrete);
+						}
 					} else {
 						deltaHp -= HpDrain / 2;
-						deltaFood -= FoodDrain;
+
+						if (!Asleep) {
+							deltaEnergy -= EnergyDrain;
+							deltaFood -= FoodDrain;
+						}
 					}
 				} else {
 					deltaHp -= HpDrain * 5;
-					deltaFood -= Food;
+
+					if (!Asleep) {
+						deltaEnergy -= EnergyDrain / 2;
+						deltaFood -= Food;
+					}
 				}
 			} else {
 				deltaHp -= HpDrain * 10;
+
+				if (!Asleep) {
+					deltaEnergy -= EnergyDrain / 2;
+				}
 			}
 
 			if (Water > 0) {
 				if (Water > WaterDrain) {
 					if (Water > DrinkThreshold) {
 						deltaHp += HpDrain / 2;
-						deltaWater -= WaterDrain * 2;
 
-						Mood.AffectUrge(Urge.Drink, -1);
-						Mood.Action(Urge.Excrete);
+						if (!Asleep) {
+							deltaEnergy -= EnergyDrain * 2;
+							deltaWater -= WaterDrain * 2;
+
+							Mood.AffectUrge(Urge.Drink, -1);
+							Mood.Action(Urge.Excrete);
+						}
 					} else {
 						deltaHp -= HpDrain / 2;
-						deltaWater -= WaterDrain;
+
+						if (!Asleep) {
+							deltaEnergy -= EnergyDrain;
+							deltaWater -= WaterDrain;
+						}
 					}
 				} else {
 					deltaHp -= HpDrain * 10;
-					deltaWater -= Water;
+
+					if (!Asleep) {
+						deltaEnergy -= EnergyDrain / 2;
+						deltaWater -= Water;
+					}
 				}
 			} else {
 				deltaHp -= HpDrain * 20;
+
+				if (!Asleep) {
+					deltaEnergy -= EnergyDrain / 2;
+				}
 			}
 
 			World.Reclaim(-deltaFood, -deltaWater);
 
 			Hp += deltaHp;
+			Energy += deltaEnergy;
 			Food += deltaFood;
 			Water += deltaWater;
 
@@ -170,19 +230,28 @@ namespace ComplexLifeforms {
 			}
 		}
 
+		private void Sleep (bool didPassOut=false) {
+			Asleep = true;
+
+			if (didPassOut) {
+				Hp -= HpDrain * 5;
+			}
+
+			Mood.Action(Urge.Sleep);
+		}
+
 		private void Heal () {
-			bool valid = true;
+			if (Hp < 0 || Hp > HealThreshold || Asleep) {
+				return;
+			}
+
 			if (Food <= HealCost) {
 				Mood.AffectUrge(Urge.Eat, 1);
-				valid = false;
+				return;
 			}
 
 			if (Water <= HealCost) {
 				Mood.AffectUrge(Urge.Drink, 1);
-				valid = false;
-			}
-
-			if (!valid) {
 				return;
 			}
 
@@ -197,7 +266,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Eat (double amount) {
-			if (!Alive || World.Food <= 0) {
+			if (!Alive || Asleep || World.Food <= 0) {
 				return;
 			}
 
@@ -246,7 +315,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Drink (double amount) {
-			if (!Alive || World.Water <= 0) {
+			if (!Alive || Asleep || World.Water <= 0) {
 				return;
 			}
 
@@ -300,11 +369,12 @@ namespace ComplexLifeforms {
 
 		public string ToString (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"{Age,5}{s}{(int)Hp,5}{s}{(int)Food,5}{s}{(int)Water,5}";
+			string data = $"{Age,5}{s}{(int)Hp,5}{s}{(int)Energy,5}{s}{(int)Food,5}{s}{(int)Water,5}";
 
 			if (extended) {
 				data += $"{s}{HealCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}{s}{DeathBy,-12}";
+						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}"
+						+ $"{s}{DeathBy,-12}{s}{(Asleep ? "yes" : "no"),-5}";
 			}
 
 			return data;
@@ -312,10 +382,11 @@ namespace ComplexLifeforms {
 
 		public static string ToStringHeader (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"age  {s}hp   {s}food {s}water";
+			string data = $"age  {s}hp   {s}energ{s}food {s}water";
 
 			if (extended) {
-				data += $"{s}heals{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}{s}{"death by",-12}";
+				data += $"{s}heals{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
+						+ $"{s}{"death by",-12}{s}asleep";
 			}
 
 			return data;

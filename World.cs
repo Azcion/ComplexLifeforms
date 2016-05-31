@@ -16,11 +16,12 @@
 		public World (int size, double startingFood=.1, double startingWater=.4,
 				int baseHp=1000, int baseEnergy=1000, int baseFood=1000, int baseWater=1000,
 				double healCost=100, double healAmount=100,
-				double hpDrain=5, double foodDrain=25, double waterDrain=50) {
+				double hpDrain=5, double energyDrain=5,
+				double foodDrain=25, double waterDrain=50) {
 
 			Init = new SInitWorld(size, startingFood, startingWater,
 					baseHp, baseEnergy, baseFood, baseWater,
-					healCost, healAmount, hpDrain, foodDrain, waterDrain);
+					healCost, healAmount, hpDrain, energyDrain, foodDrain, waterDrain);
 
 			Food = Init.StartingFood;
 			Water = Init.StartingWater;
