@@ -28,6 +28,7 @@ namespace ComplexLifeforms {
 		public DeathBy DeathBy { get; private set; }
 
 		public double Hp { get; private set; }
+		public double Energy { get; private set; }
 		public double Food { get; private set; }
 		public double Water { get; private set; }
 
@@ -36,32 +37,54 @@ namespace ComplexLifeforms {
 		public int EatCount { get; private set; }
 		public int DrinkCount { get; private set; }
 
+		/// <summary>
+		/// Unpacks SInitLifeform and uses its values.
+		/// </summary>
+		public Lifeform (World world, SInitLifeform init, Random random=null)
+				: this(world, random,
+						init.HpScale, init.EnergyScale,
+						init.FoodScale, init.WaterScale,
+						init.HealCostScale, init.HealAmountScale,
+						init.HpDrainScale, init.EnergyDrainScale,
+						init.FoodDrainScale, init.WaterDrainScale,
+						init.HealThreshold, init.SleepThreshold,
+						init.EatThreshold, init.DrinkThreshold) {
+		}
+
 		public Lifeform (World world, Random random=null,
-				double hpScale=1.0, double foodScale=1.0, double waterScale=1.0,
-				double healCostScale=1.0, double healAmountScale=1.0,
-				double hpDrainScale=1.0, double foodDrainScale=1.0, double waterDrainScale=1.0,
-				double healThreshold=0.5, double eatThreshold=0.5, double drinkThreshold=0.5) {
+				double hpScale=1, double energyScale=1,
+				double foodScale=1, double waterScale=1,
+				double healCostScale=1, double healAmountScale=1,
+				double hpDrainScale=1, double energyDrainScale=1,
+				double foodDrainScale=1, double waterDrainScale=1,
+				double healThreshold=0.5, double sleepThreshold=0.25,
+				double eatThreshold=0.5, double drinkThreshold=0.5) {
 			Id = _id++;
 			World = world;
-			Init = new SInitLifeform(hpScale, foodScale, waterScale, healCostScale,
-					healAmountScale, hpDrainScale, foodDrainScale, waterDrainScale,
-					healThreshold, eatThreshold, drinkThreshold);
+			Init = new SInitLifeform(hpScale, energyScale,
+					foodScale, waterScale,
+					healCostScale, healAmountScale,
+					hpDrainScale, energyDrainScale,
+					foodDrainScale, waterDrainScale,
+					healThreshold, sleepThreshold,
+					eatThreshold, drinkThreshold);
 			Mood = new MoodManager(random);
 
-			SInitWorld init = world.Init;
+			SInitWorld w = world.Init;
 
-			HealCost = init.HealCost * healCostScale;
-			HealAmount = init.HealAmount * healAmountScale;
-			HpDrain = init.HpDrain * hpDrainScale;
-			FoodDrain = init.FoodDrain * foodDrainScale;
-			WaterDrain = init.WaterDrain * waterDrainScale;
+			HealCost = w.HealCost * healCostScale;
+			HealAmount = w.HealAmount * healAmountScale;
+			HpDrain = w.HpDrain * hpDrainScale;
+			FoodDrain = w.FoodDrain * foodDrainScale;
+			WaterDrain = w.WaterDrain * waterDrainScale;
 
 			Alive = true;
 			DeathBy = DeathBy.None;
 
-			Hp = init.BaseHp * hpScale;
-			Food = init.BaseFood * foodScale;
-			Water = init.BaseWater * waterScale;
+			Hp = w.BaseHp * hpScale;
+			Energy = w.BaseEnergy * energyScale;
+			Food = w.BaseFood * foodScale;
+			Water = w.BaseWater * waterScale;
 
 			HealThreshold = Hp * healThreshold;
 			EatThreshold = Food * eatThreshold;

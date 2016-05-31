@@ -7,6 +7,7 @@
 		public readonly double StartingWater;
 
 		public readonly int BaseHp;
+		public readonly int BaseEnergy;
 		public readonly int BaseFood;
 		public readonly int BaseWater;
 
@@ -16,13 +17,14 @@
 		public readonly double FoodDrain;
 		public readonly double WaterDrain;
 
-		public SInitWorld (int s, double sf, double sw, int bh, int bf, int bw,
+		public SInitWorld (int s, double sf, double sw, int bh, int be, int bf, int bw,
 				double hc, double ha, double hd, double fd, double wd) {
 			Size = s;
 			StartingFood = s * sf;
 			StartingWater = s * sw;
 
 			BaseHp = bh;
+			BaseEnergy = be;
 			BaseFood = bf;
 			BaseWater = bw;
 
