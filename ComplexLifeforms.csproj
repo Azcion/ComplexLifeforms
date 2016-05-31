@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeathBy.cs" />
     <Compile Include="Lifeform.cs" />
     <Compile Include="Emotion.cs" />
     <Compile Include="MoodManager.cs" />

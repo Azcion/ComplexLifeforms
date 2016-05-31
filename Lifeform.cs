@@ -25,6 +25,8 @@ namespace ComplexLifeforms {
 		public readonly int Id;
 
 		public bool Alive { get; private set; }
+		public DeathBy DeathBy { get; private set; }
+
 		public double Hp { get; private set; }
 		public double Food { get; private set; }
 		public double Water { get; private set; }
@@ -55,6 +57,8 @@ namespace ComplexLifeforms {
 			WaterDrain = init.WaterDrain * waterDrainScale;
 
 			Alive = true;
+			DeathBy = DeathBy.None;
+
 			Hp = init.BaseHp * hpScale;
 			Food = init.BaseFood * foodScale;
 			Water = init.BaseWater * waterScale;
@@ -108,9 +112,10 @@ namespace ComplexLifeforms {
 			if (Water > 0) {
 				if (Water > WaterDrain) {
 					if (Water > DrinkThreshold) {
-						deltaHp += HpDrain;
+						deltaHp += HpDrain / 2;
 						deltaWater -= WaterDrain * 2;
 					} else {
+						deltaHp -= HpDrain / 2;
 						deltaWater -= WaterDrain;
 					}
 				} else {
@@ -195,6 +200,15 @@ namespace ComplexLifeforms {
 			Food += deltaFood;
 			Water += deltaWater;
 			++EatCount;
+
+			if (Food > Init.FoodScale * World.Init.BaseFood) {
+				Hp -= HpDrain * 4;
+
+			}
+
+			if (Hp <= 0) {
+				DeathBy = DeathBy.Overeating;
+			}
 		}
 
 		public void Drink (double amount) {
@@ -223,10 +237,27 @@ namespace ComplexLifeforms {
 			Hp += deltaHp;
 			Water += deltaWater;
 			++DrinkCount;
+
+			if (Water > Init.WaterScale * World.Init.BaseWater) {
+				Hp -= HpDrain * 4;
+
+			}
+
+			if (Hp <= 0) {
+				DeathBy = DeathBy.Overdrinking;
+			}
 		}
 
 		private void Kill () {
 			Alive = false;
+
+			if (Food <= 0) {
+				DeathBy = DeathBy.Starvation;
+			} else
+			if (Water <= 0) {
+				DeathBy = DeathBy.Dehydration;
+			}
+
 			Hp = -1;
 			World.Decompose(this);
 		}
@@ -237,7 +268,7 @@ namespace ComplexLifeforms {
 
 			if (extended) {
 				data += $"{s}{HealCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}";
+						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}{s}{DeathBy,-12}";
 			}
 
 			return data;
@@ -248,7 +279,7 @@ namespace ComplexLifeforms {
 			string data = $"age  {s}hp   {s}food {s}water";
 
 			if (extended) {
-				data += $"{s}heals{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}";
+				data += $"{s}heals{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}{s}{"death by",-12}";
 			}
 
 			return data;

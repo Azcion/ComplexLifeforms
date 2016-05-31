@@ -52,21 +52,42 @@ namespace ComplexLifeforms {
 
 			Console.WriteLine(_world.ToString('|', true));
 			Console.WriteLine();
-			Console.WriteLine(Lifeform.ToStringHeader('|', true));
 
-			// oldest and youngest
-			Console.WriteLine(_creatures.First().ToString('|', true));
-			Console.WriteLine(_creatures.Last().ToString('|', true));
+			// oldest and youngest four
+			Console.WriteLine(Lifeform.ToStringHeader('|', true));
+			Console.WriteLine(_lifeforms[0].ToString('|', true));
+			Console.WriteLine(_lifeforms[1].ToString('|', true));
+			Console.WriteLine(_lifeforms[2].ToString('|', true));
+			Console.WriteLine(_lifeforms[3].ToString('|', true));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 4].ToString('|', true));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 3].ToString('|', true));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 2].ToString('|', true));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 1].ToString('|', true));
 			Console.WriteLine();
 			Console.WriteLine(MoodManager.ToStringHeader('|'));
-			Console.WriteLine(_creatures.First().Mood.ToString('|'));
-			Console.WriteLine(_creatures.Last().Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[0].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[1].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[2].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[3].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 4].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 3].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 2].Mood.ToString('|'));
+			Console.WriteLine(_lifeforms[_lifeforms.Length - 1].Mood.ToString('|'));
+
+			int[] cause = new int[5];
+
+			foreach (Lifeform lf in _lifeforms) {
+				++cause[(int) lf.DeathBy];
+			}
+
+			Console.WriteLine("\nnone |starv|dehyd|oeat |odrin");
+			Console.WriteLine($"{cause[0],5}|{cause[1],5}|{cause[2],5}|{cause[3],5}|{cause[4],5}\n");
 
 			// standard deviation of age
 			int[] ages = new int[_lifeforms.Length];
 
-			for (int i = 0; i < _creatures.Length; ++i) {
-				ages[i] = _creatures[i].Age;
+			for (int i = 0; i < _lifeforms.Length; ++i) {
+				ages[i] = _lifeforms[i].Age;
 			}
 
 			/*using (System.IO.StreamWriter file = new StreamWriter("ages.csv")) {
