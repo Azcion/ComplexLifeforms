@@ -4,6 +4,12 @@ namespace ComplexLifeforms {
 
 	public class Lifeform {
 
+		private bool _pendingKill;
+
+		private static int _id;
+
+		public readonly int Id;
+
 		/// <summary>Constructor parameters.</summary>
 		public readonly SInitLifeform Init;
 
@@ -23,9 +29,6 @@ namespace ComplexLifeforms {
 		public readonly double SleepThreshold;
 		public readonly double EatThreshold;
 		public readonly double DrinkThreshold;
-
-		private static int _id;
-		public readonly int Id;
 
 		public bool Alive { get; private set; }
 		public bool Asleep { get; private set; }
@@ -73,7 +76,7 @@ namespace ComplexLifeforms {
 					foodDrainScale, waterDrainScale,
 					healThreshold, sleepThreshold,
 					eatThreshold, drinkThreshold);
-			Mood = new MoodManager(random);
+			Mood = new MoodManager(this, random);
 
 			SInitWorld w = world.Init;
 
@@ -108,7 +111,7 @@ namespace ComplexLifeforms {
 
 			if (Asleep) {
 				Hp += HpDrain / 10;
-				Energy += EnergyDrain * 5;
+				Energy += EnergyDrain * 10;
 				Food -= FoodDrain / 10;
 				Water -= WaterDrain / 10;
 				++SleepCount;
@@ -131,7 +134,7 @@ namespace ComplexLifeforms {
 
 			Heal();
 
-			if (Hp < 0) {
+			if (Hp < 0 || _pendingKill) {
 				Kill();
 			}
 		}
@@ -147,8 +150,8 @@ namespace ComplexLifeforms {
 					if (Food > EatThreshold) {
 						deltaHp += HpDrain / 2;
 
-						if (!Asleep) {
-							deltaEnergy -= EnergyDrain * 2;
+						if (!Asleep) {  // excrete
+							deltaEnergy -= EnergyDrain * 4;
 							deltaFood -= FoodDrain * 2;
 
 							Mood.AffectUrge(Urge.Eat, -1);
@@ -183,8 +186,8 @@ namespace ComplexLifeforms {
 					if (Water > DrinkThreshold) {
 						deltaHp += HpDrain / 2;
 
-						if (!Asleep) {
-							deltaEnergy -= EnergyDrain * 2;
+						if (!Asleep) {  // excrete
+							deltaEnergy -= EnergyDrain * 4;
 							deltaWater -= WaterDrain * 2;
 
 							Mood.AffectUrge(Urge.Drink, -1);
@@ -234,7 +237,12 @@ namespace ComplexLifeforms {
 			Asleep = true;
 
 			if (didPassOut) {
-				Hp -= HpDrain * 5;
+				Hp -= HpDrain * 10;
+				
+				if (Hp < 0 && DeathBy == DeathBy.None) {
+					DeathBy = DeathBy.Exhaustion;
+					_pendingKill = true;
+				}
 			}
 
 			Mood.Action(Urge.Sleep);
@@ -263,6 +271,25 @@ namespace ComplexLifeforms {
 			Food -= HealCost;
 			Water -= HealCost;
 			++HealCount;
+		}
+
+		private void Kill () {
+			if (_pendingKill) {
+				_pendingKill = false;
+			}
+
+			Alive = false;
+
+			if (DeathBy == DeathBy.None) {
+				if (Food <= 0) {
+					DeathBy = DeathBy.Starvation;
+				} else if (Water <= 0) {
+					DeathBy = DeathBy.Dehydration;
+				}
+			}
+
+			Hp = -1;
+			World.Decompose(this);
 		}
 
 		public void Eat (double amount) {
@@ -309,8 +336,9 @@ namespace ComplexLifeforms {
 				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
-			if (Hp <= 0) {
+			if (Hp <= 0 && DeathBy == DeathBy.None) {
 				DeathBy = DeathBy.Overeating;
+				_pendingKill = true;
 			}
 		}
 
@@ -348,23 +376,10 @@ namespace ComplexLifeforms {
 				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
-			if (Hp <= 0) {
+			if (Hp <= 0 && DeathBy == DeathBy.None) {
 				DeathBy = DeathBy.Overdrinking;
+				_pendingKill = true;
 			}
-		}
-
-		private void Kill () {
-			Alive = false;
-
-			if (Food <= 0) {
-				DeathBy = DeathBy.Starvation;
-			} else
-			if (Water <= 0) {
-				DeathBy = DeathBy.Dehydration;
-			}
-
-			Hp = -1;
-			World.Decompose(this);
 		}
 
 		public string ToString (char separator=' ', bool extended=false) {
@@ -372,7 +387,7 @@ namespace ComplexLifeforms {
 			string data = $"{Age,5}{s}{(int)Hp,5}{s}{(int)Energy,5}{s}{(int)Food,5}{s}{(int)Water,5}";
 
 			if (extended) {
-				data += $"{s}{HealCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
+				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
 						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}"
 						+ $"{s}{DeathBy,-12}{s}{(Asleep ? "yes" : "no"),-5}";
 			}
@@ -385,7 +400,7 @@ namespace ComplexLifeforms {
 			string data = $"age  {s}hp   {s}energ{s}food {s}water";
 
 			if (extended) {
-				data += $"{s}heals{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
+				data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
 						+ $"{s}{"death by",-12}{s}asleep";
 			}
 

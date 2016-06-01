@@ -23,7 +23,7 @@ namespace ComplexLifeforms {
 			Console.WriteLine(World.ToStringHeader('|', true));
 			Console.WriteLine(_world.ToString('|', true));
 
-			for (int i = 0; i < 550; ++i) {
+			for (int i = 0; i < 1000; ++i) {
 				int deadCount = 0;
 				
 				foreach (Lifeform c in _lifeforms) {
@@ -60,7 +60,7 @@ namespace ComplexLifeforms {
 				Console.WriteLine(_lifeforms[i].ToString('|', true));
 			}
 
-			for (int i = 1; i < 5; ++i) {
+			for (int i = 5; i > 0; --i) {
 				Console.WriteLine(_lifeforms[_lifeforms.Length - i].ToString('|', true));
 			}
 			
@@ -71,19 +71,19 @@ namespace ComplexLifeforms {
 				Console.WriteLine(_lifeforms[i].Mood.ToString('|'));
 			}
 
-			for (int i = 1; i < 5; ++i) {
+			for (int i = 5; i > 0; --i) {
 				Console.WriteLine(_lifeforms[_lifeforms.Length - i].Mood.ToString('|'));
 			}
 
 			// cause of death
-			int[] cause = new int[5];
+			int[] cause = new int[6];
 
 			foreach (Lifeform lf in _lifeforms) {
 				++cause[(int) lf.DeathBy];
 			}
 
-			Console.WriteLine("\nnone |starv|dehyd|oeat |odrin");
-			Console.WriteLine($"{cause[0],5}|{cause[1],5}|{cause[2],5}|{cause[3],5}|{cause[4],5}\n");
+			Console.WriteLine("\nnone |starv|dehyd|oeat |odrin|exhau");
+			Console.WriteLine($"{cause[0],5}|{cause[1],5}|{cause[2],5}|{cause[3],5}|{cause[4],5}|{cause[5],5}\n");
 
 			// standard deviation of age
 			int[] ages = new int[_lifeforms.Length];

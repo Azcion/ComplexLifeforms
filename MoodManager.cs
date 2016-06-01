@@ -5,6 +5,8 @@ namespace ComplexLifeforms {
 
 	public class MoodManager {
 
+		public Lifeform Lifeform;
+
 		/// <summary>Represents the current strongest urge.</summary>
 		public Urge Urge { get; private set; }
 		/// <summary>Represents the current strongest emotion.</summary>
@@ -17,13 +19,14 @@ namespace ComplexLifeforms {
 		public Tier[] EmotionBias { get; private set; }
 
 		private readonly Random _random;
-		private static int[,] _typeValues = { { 1, 1, 0 }, { 2, 1, 0 }, { 5, 2, 1 } };
 
+		private static readonly int[,] TYPE_VALUES = { { 1, 1, 0 }, { 2, 1, 0 }, { 5, 2, 1 } };
 		private static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
 		private static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		private static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
-		public MoodManager (Random random=null) {
+		public MoodManager (Lifeform lifeform, Random random=null) {
+			Lifeform = lifeform;
 			_random = random ?? new Random();
 
 			UrgeValues = new int[URGE_COUNT];
@@ -87,7 +90,7 @@ namespace ComplexLifeforms {
 
 		private void AffectEmotions (IReadOnlyList<Emotion> emotions, int type) {
 			for (int i = 0; i < emotions.Count; ++i) {
-				EmotionValues[(int) emotions[i]] += _typeValues[type, i];
+				EmotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
 			}
 		}
 
