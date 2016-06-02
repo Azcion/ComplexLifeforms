@@ -92,10 +92,6 @@ namespace ComplexLifeforms {
 				ages[i] = _lifeforms[i].Age;
 			}
 
-			/*using (System.IO.StreamWriter file = new StreamWriter("ages.csv")) {
-				file.Write(string.Join(",", ages));
-			}*/
-
 			double[] res = StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]}\nsdev: {res[0]}");
 		}

@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Reflection;
 
 namespace ComplexLifeforms {
 
 	public class Lifeform {
 
-		private bool _pendingKill;
-
 		private static int _id;
+
+		private bool _pendingKill;
 
 		public readonly int Id;
 
@@ -405,6 +406,39 @@ namespace ComplexLifeforms {
 			}
 
 			return data;
+		}
+
+		public static SInitLifeform? CSVToInit (string csv) {
+			object init = new SInitLifeform();
+			FieldInfo[] fields = typeof(SInitLifeform).GetFields();
+			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
+
+			if (fields.Length != values.Length) {
+				Console.WriteLine($"Number of values must match the number of SInitLifeform properties. v:{values.Length}");
+				return null;
+			}
+
+			for (int i = 0; i < fields.Length; ++i) {
+				fields[i].SetValue(init, values[i]);
+			}
+
+			return (SInitLifeform?) init;
+		}
+
+		public static string InitToCSV (SInitLifeform? init) {
+			if (init == null) {
+				Console.WriteLine("SInitLifeform was null.");
+				return "";
+			}
+
+			FieldInfo[] fields = typeof(SInitLifeform).GetFields();
+			string csv = fields[0].GetValue(init).ToString();
+
+			for (int i = 1; i < fields.Length; ++i) {
+				csv += $",{fields[i].GetValue(init)}";
+			}
+
+			return csv;
 		}
 
 	}
