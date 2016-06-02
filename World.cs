@@ -1,4 +1,7 @@
-﻿namespace ComplexLifeforms {
+﻿using System;
+using System.Reflection;
+
+namespace ComplexLifeforms {
 
 	public class World {
 
@@ -40,7 +43,7 @@
 		/// </summary>
 		public void Reclaim (double food, double water) {
 			if (food < 0 || water < 0) {
-				System.Console.WriteLine($"Food and water can not be negative. f:{food} w:{water}");
+				Console.WriteLine($"Food and water can not be negative. f:{food} w:{water}");
 				return;
 			}
 
@@ -53,7 +56,7 @@
 		/// </summary>
 		public void UseFood (double amount) {
 			if (amount < 0) {
-				System.Console.WriteLine($"Food can not be negative. f:{amount}");
+				Console.WriteLine($"Food can not be negative. f:{amount}");
 			}
 
 			Food -= amount;
@@ -71,7 +74,7 @@
 		/// <param name="amount"></param>
 		public void UseWater (double amount) {
 			if (amount < 0) {
-				System.Console.WriteLine($"Water can not be negative. w:{amount}");
+				Console.WriteLine($"Water can not be negative. w:{amount}");
 			}
 
 			Water -= amount;
@@ -103,6 +106,39 @@
 			}
 
 			return data;
+		}
+
+		public static SInitWorld? CSVToInit (string csv) {
+			object init = new SInitWorld();
+			FieldInfo[] fields = typeof(SInitWorld).GetFields();
+			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
+
+			if (fields.Length != values.Length) {
+				Console.WriteLine($"Number of values must match the number of SInitWorld properties. v:{values.Length}");
+				return null;
+			}
+
+			for (int i = 0; i < fields.Length; ++i) {
+				fields[i].SetValue(init, values[i]);
+			}
+
+			return (SInitWorld?) init;
+		}
+
+		public static string InitToCSV (SInitWorld? init) {
+			if (init == null) {
+				Console.WriteLine("SInitWorld was null.");
+				return "";
+			}
+
+			FieldInfo[] fields = typeof(SInitWorld).GetFields();
+			string csv = fields[0].GetValue(init).ToString();
+
+			for (int i = 1; i < fields.Length; ++i) {
+				csv += $",{fields[i].GetValue(init)}";
+			}
+
+			return csv;
 		}
 
 	}
