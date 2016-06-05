@@ -2,10 +2,10 @@
 
 	public class InitLifeform {
 
-		public readonly double Hp;
-		public readonly double Energy;
-		public readonly double Food;
-		public readonly double Water;
+		public readonly int Hp;
+		public readonly int Energy;
+		public readonly int Food;
+		public readonly int Water;
 
 		public readonly double HpScale;
 		public readonly double EnergyScale;
@@ -37,10 +37,10 @@
 				double foodDrainScale, double waterDrainScale,
 				double healThreshold, double sleepThreshold,
 				double eatThreshold, double drinkThreshold) {
-			Hp = baseHp * hpScale;
-			Energy = baseEnergy * energyScale;
-			Food = baseFood * foodScale;
-			Water = baseWater * waterScale;
+			Hp = (int) (baseHp * hpScale);
+			Energy = (int) (baseEnergy * energyScale);
+			Food = (int) (baseFood * foodScale);
+			Water = (int) (baseWater * waterScale);
 
 			HpScale = hpScale;
 			EnergyScale = energyScale;

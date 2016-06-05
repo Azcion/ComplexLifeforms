@@ -3,33 +3,33 @@
 	public class InitWorld {
 
 		public readonly int Size;
-		public readonly double StartingFood;
-		public readonly double StartingWater;
+		public readonly int StartingFood;
+		public readonly int StartingWater;
 
 		public readonly int BaseHp;
 		public readonly int BaseEnergy;
 		public readonly int BaseFood;
 		public readonly int BaseWater;
 
-		public readonly double HealCost;
-		public readonly double HealAmount;
+		public readonly int HealCost;
+		public readonly int HealAmount;
 
-		public readonly double HpDrain;
-		public readonly double EnergyDrain;
-		public readonly double FoodDrain;
-		public readonly double WaterDrain;
+		public readonly int HpDrain;
+		public readonly int EnergyDrain;
+		public readonly int FoodDrain;
+		public readonly int WaterDrain;
 
 		public InitWorld () {
 		}
 
-		public InitWorld (int size, double startingFood, double startingWater,
+		public InitWorld (int size, double foodScale, double waterScale,
 				int baseHp, int baseEnergy, int baseFood, int baseWater,
-				double healCost, double healAmount,
-				double hpDrain, double energyDrain,
-				double foodDrain, double waterDrain) {
+				int healCost, int healAmount,
+				int hpDrain, int energyDrain,
+				int foodDrain, int waterDrain) {
 			Size = size;
-			StartingFood = size * startingFood;
-			StartingWater = size * startingWater;
+			StartingFood = (int) (size * foodScale);
+			StartingWater = (int) (size * waterScale);
 
 			BaseHp = baseHp;
 			BaseEnergy = baseEnergy;

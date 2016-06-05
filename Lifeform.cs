@@ -18,26 +18,26 @@ namespace ComplexLifeforms {
 		public readonly World World;
 		public readonly MoodManager Mood;
 
-		public readonly double HealCost;
-		public readonly double HealAmount;
+		public readonly int HealCost;
+		public readonly int HealAmount;
 
-		public readonly double HpDrain;
-		public readonly double EnergyDrain;
-		public readonly double FoodDrain;
-		public readonly double WaterDrain;
+		public readonly int HpDrain;
+		public readonly int EnergyDrain;
+		public readonly int FoodDrain;
+		public readonly int WaterDrain;
 
-		public readonly double HealThreshold;
-		public readonly double SleepThreshold;
-		public readonly double EatThreshold;
-		public readonly double DrinkThreshold;
+		public readonly int HealThreshold;
+		public readonly int SleepThreshold;
+		public readonly int EatThreshold;
+		public readonly int DrinkThreshold;
 
 		public bool Alive { get; private set; }
 		public DeathBy DeathBy { get; private set; }
 
-		public double Hp { get; private set; }
-		public double Energy { get; private set; }
-		public double Food { get; private set; }
-		public double Water { get; private set; }
+		public int Hp { get; private set; }
+		public int Energy { get; private set; }
+		public int Food { get; private set; }
+		public int Water { get; private set; }
 
 		public int Age { get; private set; }
 		public int HealCount { get; private set; }
@@ -70,6 +70,8 @@ namespace ComplexLifeforms {
 			Id = _id++;
 			World = world;
 			Mood = new MoodManager(this, random);
+			Alive = true;
+			DeathBy = DeathBy.None;
 
 			InitWorld w = world.Init;
 
@@ -83,25 +85,23 @@ namespace ComplexLifeforms {
 					healThreshold, sleepThreshold,
 					eatThreshold, drinkThreshold);
 
-			HealCost = w.HealCost * healCostScale;
-			HealAmount = w.HealAmount * healAmountScale;
-			HpDrain = w.HpDrain * hpDrainScale;
-			EnergyDrain = w.EnergyDrain * energyDrainScale;
-			FoodDrain = w.FoodDrain * foodDrainScale;
-			WaterDrain = w.WaterDrain * waterDrainScale;
+			HealCost = (int) (w.HealCost * healCostScale);
+			HealAmount = (int) (w.HealAmount * healAmountScale);
 
-			Alive = true;
-			DeathBy = DeathBy.None;
+			HpDrain = (int) (w.HpDrain * hpDrainScale);
+			EnergyDrain = (int) (w.EnergyDrain * energyDrainScale);
+			FoodDrain = (int) (w.FoodDrain * foodDrainScale);
+			WaterDrain = (int) (w.WaterDrain * waterDrainScale);
 
-			Hp = w.BaseHp * hpScale;
-			Energy = w.BaseEnergy * energyScale;
-			Food = w.BaseFood * foodScale;
-			Water = w.BaseWater * waterScale;
+			Hp = (int) (w.BaseHp * hpScale);
+			Energy = (int) (w.BaseEnergy * energyScale);
+			Food = (int) (w.BaseFood * foodScale);
+			Water = (int) (w.BaseWater * waterScale);
 
-			HealThreshold = Hp * healThreshold;
-			SleepThreshold = Energy * sleepThreshold;
-			EatThreshold = Food * eatThreshold;
-			DrinkThreshold = Water * drinkThreshold;
+			HealThreshold = (int) (Hp * healThreshold);
+			SleepThreshold = (int) (Energy * sleepThreshold);
+			EatThreshold = (int) (Food * eatThreshold);
+			DrinkThreshold = (int) (Water * drinkThreshold);
 		}
 
 		public void Update () {
@@ -140,10 +140,11 @@ namespace ComplexLifeforms {
 		}
 
 		private void ProcessBodilyFunctions () {
-			double deltaHp = 0;
-			double deltaEnergy = 0;
-			double deltaFood = 0;
-			double deltaWater = 0;
+			bool excrete = false;
+			int deltaHp = 0;
+			int deltaEnergy = 0;
+			int deltaFood = 0;
+			int deltaWater = 0;
 			DeathBy deltaDeathBy = DeathBy.None;
 
 			if (Food > 0) {
@@ -151,6 +152,7 @@ namespace ComplexLifeforms {
 					if (Food > EatThreshold) {
 						if (Food > Init.Food) {
 							deltaHp -= HpDrain * 10;
+
 							if (deltaDeathBy == DeathBy.None) {
 								deltaDeathBy = DeathBy.Overeating;
 							}
@@ -194,6 +196,7 @@ namespace ComplexLifeforms {
 					if (Water > DrinkThreshold) {
 						if (Water > Init.Water) {
 							deltaHp -= HpDrain * 10;
+
 							if (deltaDeathBy == DeathBy.None) {
 								deltaDeathBy = DeathBy.Overdrinking;
 							}
@@ -313,14 +316,14 @@ namespace ComplexLifeforms {
 			World.Decompose(this);
 		}
 
-		public void Eat (double amount) {
+		public void Eat (int amount) {
 			if (!Alive || Mood.Asleep || World.Food <= 0) {
 				return;
 			}
 
-			double deltaHp = 0;
-			double deltaFood = 0;
-			double deltaWater = 0;
+			int deltaHp = 0;
+			int deltaFood = 0;
+			int deltaWater = 0;
 
 			if (World.Food < amount) {
 				amount = World.Food;
@@ -363,13 +366,13 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		public void Drink (double amount) {
+		public void Drink (int amount) {
 			if (!Alive || Mood.Asleep || World.Water <= 0) {
 				return;
 			}
 
-			double deltaHp = 0;
-			double deltaWater = 0;
+			int deltaHp = 0;
+			int deltaWater = 0;
 
 			if (World.Water < amount) {
 				amount = World.Water;
@@ -405,7 +408,7 @@ namespace ComplexLifeforms {
 
 		public string ToString (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"{Age,5}{s}{(int)Hp,5}{s}{(int)Energy,5}{s}{(int)Food,5}{s}{(int)Water,5}";
+			string data = $"{Age,5}{s}{Hp,5}{s}{Energy,5}{s}{Food,5}{s}{Water,5}";
 
 			if (extended) {
 				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
