@@ -67,8 +67,8 @@
     <Compile Include="MoodManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SInitLifeform.cs" />
-    <Compile Include="SInitWorld.cs" />
+    <Compile Include="InitLifeform.cs" />
+    <Compile Include="InitWorld.cs" />
     <Compile Include="Tier.cs" />
     <Compile Include="Urge.cs" />
     <Compile Include="World.cs" />

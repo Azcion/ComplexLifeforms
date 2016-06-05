@@ -1,6 +1,6 @@
 ﻿namespace ComplexLifeforms {
 
-	public struct SInitLifeform {
+	public class InitLifeform {
 
 		public readonly double Hp;
 		public readonly double Energy;
@@ -25,7 +25,10 @@
 		public readonly double EatThreshold;
 		public readonly double DrinkThreshold;
 
-		public SInitLifeform (int baseHp, int baseEnergy,
+		public InitLifeform () {
+		}
+
+		public InitLifeform (int baseHp, int baseEnergy,
 				int baseFood, int baseWater,
 				double hpScale, double energyScale,
 				double foodScale, double waterScale,

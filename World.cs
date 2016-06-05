@@ -6,7 +6,7 @@ namespace ComplexLifeforms {
 	public class World {
 
 		/// <summary>Constructor parameters.</summary>
-		public SInitWorld Init;
+		public InitWorld Init;
 
 		/// <summary>Amount of available food in the world.</summary>
 		public double Food { get; private set; }
@@ -22,7 +22,7 @@ namespace ComplexLifeforms {
 				double hpDrain=5, double energyDrain=50,
 				double foodDrain=25, double waterDrain=50) {
 
-			Init = new SInitWorld(size, startingFood, startingWater,
+			Init = new InitWorld(size, startingFood, startingWater,
 					baseHp, baseEnergy, baseFood, baseWater,
 					healCost, healAmount, hpDrain, energyDrain, foodDrain, waterDrain);
 
@@ -108,9 +108,9 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
-		public static SInitWorld? CSVToInit (string csv) {
-			object init = new SInitWorld();
-			FieldInfo[] fields = typeof(SInitWorld).GetFields();
+		public static InitWorld CSVToInit (string csv) {
+			object init = new InitWorld();
+			FieldInfo[] fields = typeof(InitWorld).GetFields();
 			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
 
 			if (fields.Length != values.Length) {
@@ -122,16 +122,16 @@ namespace ComplexLifeforms {
 				fields[i].SetValue(init, values[i]);
 			}
 
-			return (SInitWorld?) init;
+			return (InitWorld) init;
 		}
 
-		public static string InitToCSV (SInitWorld? init) {
+		public static string InitToCSV (InitWorld init) {
 			if (init == null) {
 				Console.WriteLine("SInitWorld was null.");
 				return "";
 			}
 
-			FieldInfo[] fields = typeof(SInitWorld).GetFields();
+			FieldInfo[] fields = typeof(InitWorld).GetFields();
 			string csv = fields[0].GetValue(init).ToString();
 
 			for (int i = 1; i < fields.Length; ++i) {

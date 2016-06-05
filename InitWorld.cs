@@ -1,6 +1,6 @@
 ﻿namespace ComplexLifeforms {
 
-	public struct SInitWorld {
+	public class InitWorld {
 
 		public readonly int Size;
 		public readonly double StartingFood;
@@ -19,7 +19,10 @@
 		public readonly double FoodDrain;
 		public readonly double WaterDrain;
 
-		public SInitWorld (int size, double startingFood, double startingWater,
+		public InitWorld () {
+		}
+
+		public InitWorld (int size, double startingFood, double startingWater,
 				int baseHp, int baseEnergy, int baseFood, int baseWater,
 				double healCost, double healAmount,
 				double hpDrain, double energyDrain,

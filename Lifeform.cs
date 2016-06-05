@@ -12,7 +12,7 @@ namespace ComplexLifeforms {
 		public readonly int Id;
 
 		/// <summary>Constructor parameters.</summary>
-		public readonly SInitLifeform Init;
+		public readonly InitLifeform Init;
 
 		/// <summary>World in which resources will be exchanged.</summary>
 		public readonly World World;
@@ -48,7 +48,7 @@ namespace ComplexLifeforms {
 		/// <summary>
 		/// Unpacks SInitLifeform and uses its values.
 		/// </summary>
-		public Lifeform (World world, SInitLifeform init, Random random=null)
+		public Lifeform (World world, InitLifeform init, Random random=null)
 				: this(world, random,
 						init.HpScale, init.EnergyScale,
 						init.FoodScale, init.WaterScale,
@@ -71,9 +71,9 @@ namespace ComplexLifeforms {
 			World = world;
 			Mood = new MoodManager(this, random);
 
-			SInitWorld w = world.Init;
+			InitWorld w = world.Init;
 
-			Init = new SInitLifeform(w.BaseHp, w.BaseEnergy,
+			Init = new InitLifeform(w.BaseHp, w.BaseEnergy,
 					w.BaseFood, w.BaseWater,
 					hpScale, energyScale,
 					foodScale, waterScale,
@@ -174,7 +174,7 @@ namespace ComplexLifeforms {
 						}
 					}
 				} else {
-					deltaHp -= HpDrain * 5;
+					deltaHp -= HpDrain * 10;
 
 					if (!Mood.Asleep) {
 						deltaEnergy -= EnergyDrain / 2;
@@ -225,7 +225,7 @@ namespace ComplexLifeforms {
 					}
 				}
 			} else {
-				deltaHp -= HpDrain * 20;
+				deltaHp -= HpDrain * 10;
 
 				if (!Mood.Asleep) {
 					deltaEnergy -= EnergyDrain / 2;
@@ -428,9 +428,9 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
-		public static SInitLifeform? CSVToInit (string csv) {
-			object init = new SInitLifeform();
-			FieldInfo[] fields = typeof(SInitLifeform).GetFields();
+		public static InitLifeform CSVToInit (string csv) {
+			object init = new InitLifeform();
+			FieldInfo[] fields = typeof(InitLifeform).GetFields();
 			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
 
 			if (fields.Length != values.Length) {
@@ -443,16 +443,16 @@ namespace ComplexLifeforms {
 				fields[i].SetValue(init, values[i]);
 			}
 
-			return (SInitLifeform?) init;
+			return (InitLifeform) init;
 		}
 
-		public static string InitToCSV (SInitLifeform? init) {
+		public static string InitToCSV (InitLifeform init) {
 			if (init == null) {
 				Console.WriteLine("SInitLifeform was null.");
 				return "";
 			}
 
-			FieldInfo[] fields = typeof(SInitLifeform).GetFields();
+			FieldInfo[] fields = typeof(InitLifeform).GetFields();
 			string csv = fields[0].GetValue(init).ToString();
 
 			for (int i = 1; i < fields.Length; ++i) {
