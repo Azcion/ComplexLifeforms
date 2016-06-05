@@ -18,16 +18,21 @@ namespace ComplexLifeforms {
 		public Tier[] UrgeBias { get; private set; }
 		public Tier[] EmotionBias { get; private set; }
 
+		protected internal bool Asleep;
+
 		private readonly Random _random;
 
-		private static readonly int[,] TYPE_VALUES = { { 1, 1, 0 }, { 2, 1, 0 }, { 5, 2, 1 } };
-		private static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
-		private static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
-		private static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
+		private static readonly int[,] TYPE_VALUES = { { 1, 1, 1 }, { 2, 1, 1 }, { 3, 2, 1 } };
+
+		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
+		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
+		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
 		public MoodManager (Lifeform lifeform, Random random=null) {
 			Lifeform = lifeform;
 			_random = random ?? new Random();
+
+			Asleep = false;
 
 			UrgeValues = new int[URGE_COUNT];
 			EmotionValues = new int[EMOTION_COUNT];
@@ -45,14 +50,14 @@ namespace ComplexLifeforms {
 		}
 
 		public void Update () {
-			RandomChange();
+			ProcessChanges();
 			ClampValues();
 
 			Urge = (Urge) MaxIndex(UrgeValues);
 			Emotion = (Emotion) MaxIndex(EmotionValues);
 		}
 
-		private void ClampValues () {
+		private void ProcessChanges () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
 				int u = UrgeValues[i];
 				if (u < 0) {
@@ -75,22 +80,35 @@ namespace ComplexLifeforms {
 		}
 
 		private void RandomChange () {
+		protected internal void ClampValues () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (UrgeBias[i] != Tier.None && _random.Next((int) UrgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
-					++UrgeValues[i];
+				if (UrgeBias[i] == Tier.None) {
+					UrgeValues[i] = 0;
+					continue;
+				}
+
+				int u = UrgeValues[i];
+
+				if (u < 0) {
+					UrgeValues[i] = 0;
+				} else if (u > 99) {
+					UrgeValues[i] = 99;
 				}
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (EmotionBias[i] != Tier.None && _random.Next((int) EmotionBias[i], TIER_COUNT + 1) == TIER_COUNT) {
-					++EmotionValues[i];
+				if (EmotionBias[i] == Tier.None) {
+					EmotionValues[i] = 0;
+					continue;
 				}
-			}
-		}
 
-		private void AffectEmotions (IReadOnlyList<Emotion> emotions, int type) {
-			for (int i = 0; i < emotions.Count; ++i) {
-				EmotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
+				int e = EmotionValues[i];
+
+				if (e < 0) {
+					EmotionValues[i] = 0;
+				} else if (e > 99) {
+					EmotionValues[i] = 99;
+				}
 			}
 		}
 
@@ -170,6 +188,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void AffectUrge (Urge urge, int delta) {
+			// todo expand
 			UrgeValues[(int) urge] += delta;
 		}
 

@@ -32,7 +32,6 @@ namespace ComplexLifeforms {
 		public readonly double DrinkThreshold;
 
 		public bool Alive { get; private set; }
-		public bool Asleep { get; private set; }
 		public DeathBy DeathBy { get; private set; }
 
 		public double Hp { get; private set; }
@@ -113,8 +112,6 @@ namespace ComplexLifeforms {
 			if (Asleep) {
 				Hp += HpDrain / 10;
 				Energy += EnergyDrain * 10;
-				Food -= FoodDrain / 10;
-				Water -= WaterDrain / 10;
 				++SleepCount;
 
 				if (Energy >= World.Init.BaseEnergy * Init.EnergyScale) {
@@ -123,7 +120,6 @@ namespace ComplexLifeforms {
 			}
 
 			ProcessBodilyFunctions();
-			Mood.Update();
 
 			if (Energy < SleepThreshold) {
 				if (Energy < 0) {
@@ -134,6 +130,7 @@ namespace ComplexLifeforms {
 			}
 
 			Heal();
+			Mood.Update();
 
 			if (Hp < 0 || _pendingKill) {
 				Kill();
@@ -279,6 +276,7 @@ namespace ComplexLifeforms {
 				_pendingKill = false;
 			}
 
+			Mood.ClampValues();
 			Alive = false;
 
 			if (DeathBy == DeathBy.None) {
@@ -414,7 +412,8 @@ namespace ComplexLifeforms {
 			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
 
 			if (fields.Length != values.Length) {
-				Console.WriteLine($"Number of values must match the number of SInitLifeform properties. v:{values.Length}");
+				Console.WriteLine("Number of values must match the number of SInitLifeform properties."
+						+ $" v:{values.Length}");
 				return null;
 			}
 

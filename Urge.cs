@@ -1,5 +1,8 @@
-﻿namespace ComplexLifeforms {
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace ComplexLifeforms {
+
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public enum Urge {
 
 		Eat,
