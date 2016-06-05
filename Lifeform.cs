@@ -144,11 +144,19 @@ namespace ComplexLifeforms {
 			double deltaEnergy = 0;
 			double deltaFood = 0;
 			double deltaWater = 0;
+			DeathBy deltaDeathBy = DeathBy.None;
 
 			if (Food > 0) {
 				if (Food > FoodDrain) {
 					if (Food > EatThreshold) {
-						deltaHp += HpDrain / 2;
+						if (Food > Init.Food) {
+							deltaHp -= HpDrain * 10;
+							if (deltaDeathBy == DeathBy.None) {
+								deltaDeathBy = DeathBy.Overeating;
+							}
+						} else {
+							deltaHp += HpDrain / 2;
+						}
 
 						if (!Mood.Asleep) {  // excrete
 							deltaEnergy -= EnergyDrain * 4;
@@ -184,7 +192,14 @@ namespace ComplexLifeforms {
 			if (Water > 0) {
 				if (Water > WaterDrain) {
 					if (Water > DrinkThreshold) {
-						deltaHp += HpDrain / 2;
+						if (Water > Init.Water) {
+							deltaHp -= HpDrain * 10;
+							if (deltaDeathBy == DeathBy.None) {
+								deltaDeathBy = DeathBy.Overdrinking;
+							}
+						} else {
+							deltaHp += HpDrain / 2;
+						}
 
 						if (!Mood.Asleep) {  // excrete
 							deltaEnergy -= EnergyDrain * 4;
@@ -223,6 +238,11 @@ namespace ComplexLifeforms {
 			Energy += deltaEnergy;
 			Food += deltaFood;
 			Water += deltaWater;
+
+			if (Hp < 0 && DeathBy == DeathBy.None && deltaDeathBy != DeathBy.None) {
+				DeathBy = deltaDeathBy;
+				_pendingKill = true;
+			}
 
 			if (Food < 0) {
 				Food = 0;
