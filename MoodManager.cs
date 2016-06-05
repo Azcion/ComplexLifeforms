@@ -59,27 +59,30 @@ namespace ComplexLifeforms {
 
 		private void ProcessChanges () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				int u = UrgeValues[i];
-				if (u < 0) {
-					UrgeValues[i] = 0;
-				} else
-				if (u > 99) {
-					UrgeValues[i] = 99;
+				if (_random.Next((int) UrgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
+					if (Asleep) {
+						--UrgeValues[i];
+					} else {
+						++UrgeValues[i];
+					}
 				}
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				int e = EmotionValues[i];
-				if (e < 0) {
-					EmotionValues[i] = 0;
-				} else 
-				if (e > 99) {
-					EmotionValues[i] = 99;
+				if (Asleep) {
+					EmotionValues[i] -= TIER_COUNT - (int) EmotionBias[i];
+				} else if (_random.Next((int) EmotionBias[i], TIER_COUNT + 1) == TIER_COUNT) {
+					--EmotionValues[i];
 				}
 			}
 		}
 
-		private void RandomChange () {
+		private void AffectEmotions (IReadOnlyList<Emotion> emotions, int type) {
+			for (int i = 0; i < emotions.Count; ++i) {
+				EmotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
+			}
+		}
+
 		protected internal void ClampValues () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
 				if (UrgeBias[i] == Tier.None) {
@@ -161,6 +164,22 @@ namespace ComplexLifeforms {
 					}
 					break;
 				case Urge.Sleep:
+					if (iaction == maxA) {  // highest
+						emotions = new[] { Emotion.Joy, Emotion.Fear };
+						type = 2;
+					} else if (iaction == maxB) {  // second highest
+						emotions = new[] { Emotion.Joy, Emotion.Fear };
+						type = 1;
+					} else if (iaction == minA) {  // lowest
+						emotions = new[] { Emotion.Anger, Emotion.Joy };
+						type = 2;
+					} else if (iaction == minB) {  // second lowest
+						emotions = new[] { Emotion.Anger, Emotion.Joy };
+						type = 1;
+					} else {
+						emotions = new[] { Emotion.Joy, Emotion.Fear };
+					}
+					break;
 				case Urge.Heal:
 					if (iaction == maxA) {  // highest
 						emotions = new[] { Emotion.Joy, Emotion.Fear, Emotion.Anticipation };

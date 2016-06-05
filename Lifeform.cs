@@ -69,16 +69,19 @@ namespace ComplexLifeforms {
 				double eatThreshold=0.5, double drinkThreshold=0.5) {
 			Id = _id++;
 			World = world;
-			Init = new SInitLifeform(hpScale, energyScale,
+			Mood = new MoodManager(this, random);
+
+			SInitWorld w = world.Init;
+
+			Init = new SInitLifeform(w.BaseHp, w.BaseEnergy,
+					w.BaseFood, w.BaseWater,
+					hpScale, energyScale,
 					foodScale, waterScale,
 					healCostScale, healAmountScale,
 					hpDrainScale, energyDrainScale,
 					foodDrainScale, waterDrainScale,
 					healThreshold, sleepThreshold,
 					eatThreshold, drinkThreshold);
-			Mood = new MoodManager(this, random);
-
-			SInitWorld w = world.Init;
 
 			HealCost = w.HealCost * healCostScale;
 			HealAmount = w.HealAmount * healAmountScale;
@@ -88,7 +91,6 @@ namespace ComplexLifeforms {
 			WaterDrain = w.WaterDrain * waterDrainScale;
 
 			Alive = true;
-			Asleep = false;
 			DeathBy = DeathBy.None;
 
 			Hp = w.BaseHp * hpScale;
@@ -109,13 +111,13 @@ namespace ComplexLifeforms {
 
 			++Age;
 
-			if (Asleep) {
-				Hp += HpDrain / 10;
+			if (Mood.Asleep) {
+				//Hp += HpDrain / 10;
 				Energy += EnergyDrain * 10;
 				++SleepCount;
 
 				if (Energy >= World.Init.BaseEnergy * Init.EnergyScale) {
-					Asleep = false;
+					Mood.Asleep = false;
 				}
 			}
 
@@ -148,7 +150,7 @@ namespace ComplexLifeforms {
 					if (Food > EatThreshold) {
 						deltaHp += HpDrain / 2;
 
-						if (!Asleep) {  // excrete
+						if (!Mood.Asleep) {  // excrete
 							deltaEnergy -= EnergyDrain * 4;
 							deltaFood -= FoodDrain * 2;
 
@@ -158,7 +160,7 @@ namespace ComplexLifeforms {
 					} else {
 						deltaHp -= HpDrain / 2;
 
-						if (!Asleep) {
+						if (!Mood.Asleep) {
 							deltaEnergy -= EnergyDrain;
 							deltaFood -= FoodDrain;
 						}
@@ -166,7 +168,7 @@ namespace ComplexLifeforms {
 				} else {
 					deltaHp -= HpDrain * 5;
 
-					if (!Asleep) {
+					if (!Mood.Asleep) {
 						deltaEnergy -= EnergyDrain / 2;
 						deltaFood -= Food;
 					}
@@ -174,7 +176,7 @@ namespace ComplexLifeforms {
 			} else {
 				deltaHp -= HpDrain * 10;
 
-				if (!Asleep) {
+				if (!Mood.Asleep) {
 					deltaEnergy -= EnergyDrain / 2;
 				}
 			}
@@ -184,7 +186,7 @@ namespace ComplexLifeforms {
 					if (Water > DrinkThreshold) {
 						deltaHp += HpDrain / 2;
 
-						if (!Asleep) {  // excrete
+						if (!Mood.Asleep) {  // excrete
 							deltaEnergy -= EnergyDrain * 4;
 							deltaWater -= WaterDrain * 2;
 
@@ -194,7 +196,7 @@ namespace ComplexLifeforms {
 					} else {
 						deltaHp -= HpDrain / 2;
 
-						if (!Asleep) {
+						if (!Mood.Asleep) {
 							deltaEnergy -= EnergyDrain;
 							deltaWater -= WaterDrain;
 						}
@@ -202,7 +204,7 @@ namespace ComplexLifeforms {
 				} else {
 					deltaHp -= HpDrain * 10;
 
-					if (!Asleep) {
+					if (!Mood.Asleep) {
 						deltaEnergy -= EnergyDrain / 2;
 						deltaWater -= Water;
 					}
@@ -210,7 +212,7 @@ namespace ComplexLifeforms {
 			} else {
 				deltaHp -= HpDrain * 20;
 
-				if (!Asleep) {
+				if (!Mood.Asleep) {
 					deltaEnergy -= EnergyDrain / 2;
 				}
 			}
@@ -232,7 +234,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Sleep (bool didPassOut=false) {
-			Asleep = true;
+			Mood.Asleep = true;
 
 			if (didPassOut) {
 				Hp -= HpDrain * 10;
@@ -247,7 +249,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Heal () {
-			if (Hp < 0 || Hp > HealThreshold || Asleep) {
+			if (Hp < 0 || Hp > HealThreshold || Mood.Asleep) {
 				return;
 			}
 
@@ -292,7 +294,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Eat (double amount) {
-			if (!Alive || Asleep || World.Food <= 0) {
+			if (!Alive || Mood.Asleep || World.Food <= 0) {
 				return;
 			}
 
@@ -342,7 +344,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Drink (double amount) {
-			if (!Alive || Asleep || World.Water <= 0) {
+			if (!Alive || Mood.Asleep || World.Water <= 0) {
 				return;
 			}
 
@@ -388,7 +390,7 @@ namespace ComplexLifeforms {
 			if (extended) {
 				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
 						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}"
-						+ $"{s}{DeathBy,-12}{s}{(Asleep ? "yes" : "no"),-5}";
+						+ $"{s}{DeathBy,-12}{s}{(Mood.Asleep ? "yes" : "no"),-5}";
 			}
 
 			return data;
