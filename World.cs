@@ -6,7 +6,7 @@ namespace ComplexLifeforms {
 	public class World {
 
 		/// <summary>Constructor parameters.</summary>
-		public InitWorld Init;
+		public readonly InitWorld Init;
 
 		/// <summary>Amount of available food in the world.</summary>
 		public int Food { get; private set; }
@@ -19,9 +19,9 @@ namespace ComplexLifeforms {
 		public World (int size, double foodScale =.1, double waterScale=.4,
 				int baseHp=1000, int baseEnergy=1000,
 				int baseFood=1000, int baseWater=1000,
-				int healCost =100, int healAmount =100,
-				int hpDrain =5, int energyDrain =50,
-				int foodDrain =25, int waterDrain =50) {
+				int healCost=50, int healAmount=100,
+				int hpDrain=5, int energyDrain=50,
+				int foodDrain=25, int waterDrain=50) {
 
 			Init = new InitWorld(size, foodScale, waterScale,
 					baseHp, baseEnergy,

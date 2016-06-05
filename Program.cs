@@ -11,20 +11,27 @@ namespace ComplexLifeforms {
 		private static readonly World WORLD = new World(5000000);
 		private static readonly Lifeform[] LIFEFORMS = new Lifeform[1000];
 
+		private const int CYCLES = 1000;
+
+		private static readonly string[][] LOG = new string[LIFEFORMS.Length][];
+
 		private static void Main () {
 			_random = new Random();
 
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				LIFEFORMS[i] = new Lifeform(WORLD, _random, healAmountScale:0.5);
+				LOG[i] = new string[CYCLES];
 			}
 
 			Console.WriteLine(World.ToStringHeader('|', true) + "|alive ");
 			Console.WriteLine(WORLD.ToString('|', true) + $"|{LIFEFORMS.Length,6}");
 
-			for (int i = 0; i < 100; ++i) {
+			for (int i = 0; i < CYCLES; ++i) {
 				int deadCount = 0;
 				
-				foreach (Lifeform c in LIFEFORMS) {
+				for (int j = 0; j < LIFEFORMS.Length; ++j) {
+					Lifeform c = LIFEFORMS[j];
+
 					if (!c.Alive) {
 						++deadCount;
 						continue;
@@ -39,6 +46,8 @@ namespace ComplexLifeforms {
 					}
 
 					c.Update();
+
+					LOG[j][i] = c.ToString(extended: true);
 				}
 
 				if (deadCount == LIFEFORMS.Length) {
@@ -110,7 +119,7 @@ namespace ComplexLifeforms {
 			}
 
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Causes of death",-31}");
-			Console.WriteLine(MoodManager.ToStringHeader('|') + "||none|strv|dhyd|oeat|odrn|exhs");
+			Console.WriteLine(MoodManager.ToStringHeader('|') + "||none|strv|dhyd|oeat|ohyd|exhs");
 
 			foreach (int u in urgeStats) {
 				Console.Write($"{u,4}|");
@@ -137,6 +146,25 @@ namespace ComplexLifeforms {
 
 			double[] res = StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
+
+			// debugging
+			Console.WriteLine();
+
+			for (int i = 0; i < LIFEFORMS.Length; ++i) {
+				Lifeform lifeform = LIFEFORMS[i];
+
+				if (lifeform.Hp == -1 && lifeform.DeathBy == DeathBy.None) {
+					foreach (string cycle in LOG[i]) {
+						if (string.IsNullOrEmpty(cycle)) {
+							continue;
+						}
+
+						Console.WriteLine(cycle);
+					}
+
+					break;
+				}
+			}
 		}
 
 		public static double[] StandardDeviation (IEnumerable<int> values) {

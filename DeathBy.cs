@@ -6,7 +6,7 @@
 		Starvation,
 		Dehydration,
 		Overeating,
-		Overdrinking,
+		Overhydration,
 		Exhaustion
 
 	}

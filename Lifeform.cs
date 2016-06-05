@@ -111,19 +111,20 @@ namespace ComplexLifeforms {
 
 			++Age;
 
+			ProcessBodilyFunctions();
+			Heal();
+
 			if (Mood.Asleep) {
-				//Hp += HpDrain / 10;
-				Energy += EnergyDrain * 10;
+				Hp += HpDrain * 2;
+				Energy += EnergyDrain * 8;
 				++SleepCount;
 
-				if (Energy >= World.Init.BaseEnergy * Init.EnergyScale) {
+				if (Energy >= Init.Energy || Hp < HpDrain * 32) {
 					Mood.Asleep = false;
 				}
 			}
 
-			ProcessBodilyFunctions();
-
-			if (Energy < SleepThreshold) {
+			if (!Mood.Asleep && Energy < SleepThreshold) {
 				if (Energy < 0) {
 					Sleep(true);
 				}
@@ -131,107 +132,86 @@ namespace ComplexLifeforms {
 				Sleep();
 			}
 
-			Heal();
 			Mood.Update();
 
-			if (Hp < 0 || _pendingKill) {
+			if (Hp <= 0 || _pendingKill || DeathBy != DeathBy.None) {
 				Kill();
 			}
 		}
 
 		private void ProcessBodilyFunctions () {
-			bool excrete = false;
+			bool excreteOne = false;
+			bool excreteTwo = false;
 			int deltaHp = 0;
 			int deltaEnergy = 0;
 			int deltaFood = 0;
 			int deltaWater = 0;
 			DeathBy deltaDeathBy = DeathBy.None;
 
-			if (Food > 0) {
-				if (Food > FoodDrain) {
-					if (Food > EatThreshold) {
-						if (Food > Init.Food) {
-							deltaHp -= HpDrain * 10;
-
-							if (deltaDeathBy == DeathBy.None) {
-								deltaDeathBy = DeathBy.Overeating;
-							}
-						} else {
-							deltaHp += HpDrain / 2;
-						}
-
-						if (!Mood.Asleep) {  // excrete
-							deltaEnergy -= EnergyDrain * 4;
-							deltaFood -= FoodDrain * 2;
-
-							Mood.AffectUrge(Urge.Eat, -1);
-							Mood.Action(Urge.Excrete);
-						}
-					} else {
-						deltaHp -= HpDrain / 2;
-
-						if (!Mood.Asleep) {
-							deltaEnergy -= EnergyDrain;
-							deltaFood -= FoodDrain;
-						}
-					}
-				} else {
-					deltaHp -= HpDrain * 10;
-
-					if (!Mood.Asleep) {
-						deltaEnergy -= EnergyDrain / 2;
-						deltaFood -= Food;
-					}
-				}
+			if (Water > Init.Water) {
+				excreteOne = true;
+				deltaHp -= HpDrain * 8;
+				deltaEnergy -= EnergyDrain * 8;
+				deltaWater -= WaterDrain * 8;
+				deltaDeathBy = DeathBy.Overhydration;
+			} else if (Water > DrinkThreshold) {
+				excreteOne = true;
+				deltaEnergy -= EnergyDrain * 4;
+				deltaWater -= WaterDrain * 4;
+			} else if (Water > WaterDrain) {
+				deltaHp -= HpDrain / 2;
+				deltaEnergy -= EnergyDrain;
+				deltaWater -= WaterDrain;
+			} else if (Water > 0) {
+				deltaHp -= HpDrain * 4;
+				deltaEnergy -= EnergyDrain * 2;
+				deltaWater -= Water;
 			} else {
-				deltaHp -= HpDrain * 10;
+				deltaHp -= HpDrain * 16;
+				deltaEnergy -= EnergyDrain * 4;
 
-				if (!Mood.Asleep) {
-					deltaEnergy -= EnergyDrain / 2;
+				if (deltaDeathBy == DeathBy.None) {
+					deltaDeathBy = DeathBy.Dehydration;
 				}
 			}
 
-			if (Water > 0) {
-				if (Water > WaterDrain) {
-					if (Water > DrinkThreshold) {
-						if (Water > Init.Water) {
-							deltaHp -= HpDrain * 10;
-
-							if (deltaDeathBy == DeathBy.None) {
-								deltaDeathBy = DeathBy.Overdrinking;
-							}
-						} else {
-							deltaHp += HpDrain / 2;
-						}
-
-						if (!Mood.Asleep) {  // excrete
-							deltaEnergy -= EnergyDrain * 4;
-							deltaWater -= WaterDrain * 2;
-
-							Mood.AffectUrge(Urge.Drink, -1);
-							Mood.Action(Urge.Excrete);
-						}
-					} else {
-						deltaHp -= HpDrain / 2;
-
-						if (!Mood.Asleep) {
-							deltaEnergy -= EnergyDrain;
-							deltaWater -= WaterDrain;
-						}
-					}
-				} else {
-					deltaHp -= HpDrain * 10;
-
-					if (!Mood.Asleep) {
-						deltaEnergy -= EnergyDrain / 2;
-						deltaWater -= Water;
-					}
-				}
+			if (Food > Init.Food) {
+				excreteTwo = true;
+				deltaHp -= HpDrain * 8;
+				deltaEnergy -= EnergyDrain * 8;
+				deltaFood -= FoodDrain * 8;
+				deltaDeathBy = DeathBy.Overeating;
+			} else if (Food > EatThreshold) {
+				excreteTwo = true;
+				deltaEnergy -= EnergyDrain * 4;
+				deltaFood -= FoodDrain * 4;
+			} else if (Food > FoodDrain) {
+				deltaHp -= HpDrain / 2;
+				deltaEnergy -= EnergyDrain;
+				deltaFood -= FoodDrain;
+			} else if (Food > 0) {
+				deltaHp -= HpDrain * 4;
+				deltaEnergy -= EnergyDrain * 2;
+				deltaFood -= Food;
 			} else {
-				deltaHp -= HpDrain * 10;
+				deltaHp -= HpDrain * 16;
+				deltaEnergy -= EnergyDrain * 4;
+				deltaDeathBy = DeathBy.Starvation;
+			}
 
-				if (!Mood.Asleep) {
-					deltaEnergy -= EnergyDrain / 2;
+			if (Mood.Asleep) {
+				deltaEnergy = 0;
+				deltaFood = 0;
+				deltaWater = 0;
+			} else {
+				if (excreteOne) {
+					Mood.AffectUrge(Urge.Drink, -1);
+					Mood.Action(Urge.Excrete);
+				}
+
+				if (excreteTwo) {
+					Mood.AffectUrge(Urge.Eat, -1);
+					Mood.Action(Urge.Excrete);
 				}
 			}
 
@@ -245,6 +225,10 @@ namespace ComplexLifeforms {
 			if (Hp < 0 && DeathBy == DeathBy.None && deltaDeathBy != DeathBy.None) {
 				DeathBy = deltaDeathBy;
 				_pendingKill = true;
+			}
+
+			if (Energy < 0) {
+				Energy = 0;
 			}
 
 			if (Food < 0) {
@@ -272,27 +256,46 @@ namespace ComplexLifeforms {
 		}
 
 		private void Heal () {
-			if (Hp < 0 || Hp > HealThreshold || Mood.Asleep) {
+			if (Hp > HealThreshold || Mood.Asleep) {
 				return;
 			}
 
-			if (Food <= HealCost) {
+			int deltaFood = 0;
+			int deltaWater = 0;
+			int cost = HealCost + Age;
+			int effectiveness = cost + cost;
+
+			if (Food <= cost) {
 				Mood.AffectUrge(Urge.Eat, 1);
-				return;
+
+				if (Food > 0) {
+					deltaFood -= Food;
+					effectiveness -= Food;
+				} else {
+					effectiveness -= cost;
+				}
+			} else {
+				deltaFood -= cost;
 			}
 
-			if (Water <= HealCost) {
+			if (Water <= cost) {
 				Mood.AffectUrge(Urge.Drink, 1);
-				return;
+
+				if (Water > 0) {
+					deltaWater -= Water;
+				} else {
+					effectiveness -= cost;
+				}
+			} else {
+				deltaWater -= cost;
 			}
 
-			World.Reclaim(HealCost, HealCost);
-
+			World.Reclaim(-deltaFood, -deltaWater);
 			Mood.Action(Urge.Heal);
 
-			Hp += HealAmount;
-			Food -= HealCost;
-			Water -= HealCost;
+			Hp += effectiveness / (cost + cost) * HealAmount;
+			Food += deltaFood;
+			Water += deltaWater;
 			++HealCount;
 		}
 
@@ -305,7 +308,9 @@ namespace ComplexLifeforms {
 			Alive = false;
 
 			if (DeathBy == DeathBy.None) {
-				if (Food <= 0) {
+				if (Energy <= 0) {
+					DeathBy = DeathBy.Exhaustion;
+				} else if (Food <= 0) {
 					DeathBy = DeathBy.Starvation;
 				} else if (Water <= 0) {
 					DeathBy = DeathBy.Dehydration;
@@ -317,11 +322,10 @@ namespace ComplexLifeforms {
 		}
 
 		public void Eat (int amount) {
-			if (!Alive || Mood.Asleep || World.Food <= 0) {
+			if (!Alive || Mood.Asleep || World.Food <= 0 || _pendingKill) {
 				return;
 			}
 
-			int deltaHp = 0;
 			int deltaFood = 0;
 			int deltaWater = 0;
 
@@ -333,7 +337,6 @@ namespace ComplexLifeforms {
 				deltaFood += amount;
 				deltaWater -= WaterDrain / 2;
 			} else {
-				deltaHp -= HpDrain * 2;
 				deltaFood += amount / 2;
 				deltaWater -= WaterDrain * 2;
 			}
@@ -345,15 +348,13 @@ namespace ComplexLifeforms {
 
 			World.UseFood(deltaFood);
 			World.Reclaim(0, -deltaWater);
-
 			Mood.Action(Urge.Eat);
 
-			Hp += deltaHp;
 			Food += deltaFood;
 			Water += deltaWater;
 			++EatCount;
 
-			if (Food > Init.FoodScale * World.Init.BaseFood) {
+			if (Food > Init.Food) {
 				Hp -= HpDrain * 4;
 
 				Mood.AffectUrge(Urge.Eat, -2);
@@ -367,11 +368,10 @@ namespace ComplexLifeforms {
 		}
 
 		public void Drink (int amount) {
-			if (!Alive || Mood.Asleep || World.Water <= 0) {
+			if (!Alive || Mood.Asleep || World.Water <= 0 || _pendingKill) {
 				return;
 			}
 
-			int deltaHp = 0;
 			int deltaWater = 0;
 
 			if (World.Water < amount) {
@@ -381,19 +381,16 @@ namespace ComplexLifeforms {
 			if (Water < DrinkThreshold) {
 				deltaWater += amount;
 			} else {
-				deltaHp -= HpDrain * 2;
 				deltaWater += amount / 2;
 			}
 
 			World.UseWater(deltaWater);
-
 			Mood.Action(Urge.Drink);
 
-			Hp += deltaHp;
 			Water += deltaWater;
 			++DrinkCount;
 
-			if (Water > Init.WaterScale * World.Init.BaseWater) {
+			if (Water > Init.Water) {
 				Hp -= HpDrain * 4;
 
 				Mood.AffectUrge(Urge.Drink, -2);
@@ -401,7 +398,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (Hp <= 0 && DeathBy == DeathBy.None) {
-				DeathBy = DeathBy.Overdrinking;
+				DeathBy = DeathBy.Overhydration;
 				_pendingKill = true;
 			}
 		}
