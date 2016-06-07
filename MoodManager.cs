@@ -290,33 +290,36 @@ namespace ComplexLifeforms {
 		}
 
 		public static int[] EdgeIndexes<T> (IEnumerable<T> array) where T : IComparable<T> {
+		public static int[] EdgeIndexes (int[] array) {
 			int maxAIndex = -1;
 			int maxBIndex = -1;
 			int minAIndex = -1;
 			int minBIndex = -1;
-			T maxAValue = default(T);
-			T maxBValue = default(T);
-			T minAValue = default(T);
-			T minBValue = default(T);
+			int maxAValue = array[0];
+			int maxBValue = array[0];
+			int minAValue = array[0];
+			int minBValue = array[0];
 
 			int index = 0;
-			foreach (T value in array) {
+			foreach (int value in array) {
 				if (value.CompareTo(maxAValue) > 0 || maxAIndex == -1) {
+					maxBIndex = maxAIndex;
 					maxAIndex = index;
 					maxAValue = value;
-				}
-				if (value.CompareTo(maxBValue) > 0 || maxBIndex == -1) {
+				} else if (value.CompareTo(maxBValue) > 0 || maxBIndex == -1) {
 					maxBIndex = index;
 					maxBValue = value;
 				}
+
 				if (value.CompareTo(minAValue) < 0 || minBIndex == -1) {
+					minBIndex = minAIndex;
 					minAIndex = index;
 					minAValue = value;
-				}
-				if (value.CompareTo(minBValue) < 0 || minBIndex == -1) {
+				} else if (value.CompareTo(minBValue) < 0 || minBIndex == -1) {
 					minBIndex = index;
 					minBValue = value;
 				}
+
 				++index;
 			}
 
