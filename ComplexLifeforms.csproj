@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Enums\DeathBy.cs" />
     <Compile Include="Enums\Emotion.cs" />
+    <Compile Include="Enums\Mood.cs" />
     <Compile Include="Enums\Tier.cs" />
     <Compile Include="Enums\Urge.cs" />
     <Compile Include="Lifeform.cs" />

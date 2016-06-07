@@ -412,11 +412,11 @@ namespace ComplexLifeforms {
 
 			if (extended) {
 				int maxIndex = MoodManager.MaxIndex(Mood.EmotionValues);
-				string emotion = MoodManager.EmotionName(Mood.Emotion, maxIndex);
+				string emotion = MoodManager.EmotionName(Mood.Emotion, Mood.EmotionValues[maxIndex]);
 
 				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}"
-						+ $"{s}{DeathBy,-12}{s}{(Mood.Asleep ? "yes" : "no"),-5}";
+						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}{s}{Mood.Mood,-8}"
+						+ $"{s}{DeathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
 			}
 
 			return data;
@@ -428,7 +428,7 @@ namespace ComplexLifeforms {
 
 			if (extended) {
 				data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
-						+ $"{s}{"death by",-12}{s}asleep";
+						+ $"{s}{"mood",-8}{s}{"death by",-13}{s}asleep";
 			}
 
 			return data;

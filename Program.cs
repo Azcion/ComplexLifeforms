@@ -100,14 +100,14 @@ namespace ComplexLifeforms {
 			}
 
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
-			Console.WriteLine(MoodManager.ToStringHeader('|'));
+			Console.WriteLine(MoodManager.ToStringHeader('|', true));
 
 			for (int i = 0; i < 4; ++i) {
-				Console.WriteLine(lifeforms[i].Mood.ToString('|'));
+				Console.WriteLine(lifeforms[i].Mood.ToString('|', true));
 			}
 
 			for (int i = 5; i > 1; --i) {
-				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString('|'));
+				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString('|', true));
 			}
 
 			// statistics

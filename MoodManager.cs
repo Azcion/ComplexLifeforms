@@ -8,10 +8,14 @@ namespace ComplexLifeforms {
 
 		public Lifeform Lifeform;
 
+		/// <summary>Represents the current general mood.</summary>
+		public Mood Mood { get; private set; }
 		/// <summary>Represents the current strongest urge.</summary>
 		public Urge Urge { get; private set; }
 		/// <summary>Represents the current strongest emotion.</summary>
 		public Emotion Emotion { get; private set; }
+
+		public int MoodValue { get; private set; }
 
 		public int[] UrgeValues { get; private set;}
 		public int[] EmotionValues { get; private set; }
@@ -23,6 +27,7 @@ namespace ComplexLifeforms {
 
 		private readonly Random _random;
 
+		private static readonly int[] EMOTION_MOOD_EFFECT = { 10, 3, -1, 0, -4, -3, -5, 0 };
 		private static readonly int[,] TYPE_VALUES = { { 1, 1, 1 }, { 2, 1, 1 }, { 3, 2, 1 } };
 		private static readonly string[,] EMOTION_NAMES = {
 				{ "Serenity", "Acceptance", "Apprehension", "Distraction",
@@ -59,11 +64,14 @@ namespace ComplexLifeforms {
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
 				EmotionBias[i] = (Tier) _random.Next(TIER_COUNT);
 			}
+
+			Update();
 		}
 
 		public void Update () {
 			ProcessChanges();
 			ClampValues();
+			ProcessMood();
 
 			Urge = (Urge) MaxIndex(UrgeValues);
 			Emotion = (Emotion) MaxIndex(EmotionValues);
@@ -81,10 +89,8 @@ namespace ComplexLifeforms {
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (Asleep) {
-					EmotionValues[i] -= TIER_COUNT - (int) EmotionBias[i];
-				} else if (_random.Next((int) EmotionBias[i], TIER_COUNT + 1) == TIER_COUNT) {
-					--EmotionValues[i];
+				if (Asleep && _random.Next(TIER_COUNT - (int) EmotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
+					EmotionValues[i] -= TIER_COUNT - (int) EmotionBias[i] + 1;
 				}
 			}
 		}
@@ -93,6 +99,37 @@ namespace ComplexLifeforms {
 			for (int i = 0; i < emotions.Count; ++i) {
 				EmotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
 			}
+		}
+
+		private void ProcessMood () {
+			const int optimal = 30;
+			const int good = optimal / 4;
+			const int neutral = 0;
+			const int bad = -good;
+			const int terrible = -optimal;
+
+			int mood = MoodValue / 2;
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				int intensity = EmotionIntensity(EmotionValues[i]);
+				if (EmotionValues[i] != 0) {
+					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
+				}
+			}
+
+			if (mood > good) {
+				Mood = Mood.Great;
+			} else if (mood > neutral) {
+				Mood = Mood.Good;
+			} else if (mood > bad) {
+				Mood = Mood.Neutral;
+			} else if (mood > terrible) {
+				Mood = Mood.Bad;
+			} else {
+				Mood = Mood.Terrible;
+			}
+
+			MoodValue = mood;
 		}
 
 		protected internal void ClampValues () {
@@ -238,7 +275,7 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		public string ToString (char separator=' ') {
+		public string ToString (char separator=' ', bool mood=false) {
 			char s = separator;
 			string data = $"{UrgeValues[0],2} {(int) UrgeBias[0]}";
 
@@ -251,10 +288,14 @@ namespace ComplexLifeforms {
 				data += $"{s}{EmotionValues[i],2} {(int) EmotionBias[i]}";
 			}
 
+			if (mood) {
+				data += $"{s}{s}{MoodValue,4}";
+			}
+
 			return data;
 		}
 
-		public static string ToStringHeader (char separator=' ') {
+		public static string ToStringHeader (char separator=' ', bool mood=false) {
 			char s = separator;
 			string data = "";
 
@@ -274,6 +315,10 @@ namespace ComplexLifeforms {
 				data += $"{s}{Truncate(emotion, 4),-4}";
 			}
 
+			if (mood) {
+				data += $"{s}{s}mood";
+			}
+
 			return data;
 		}
 
@@ -289,7 +334,24 @@ namespace ComplexLifeforms {
 			return value.Substring(0, length);
 		}
 
-		public static int[] EdgeIndexes<T> (IEnumerable<T> array) where T : IComparable<T> {
+		public static int EmotionIntensity (int value) {
+			const int high = (int) (EMOTION_CAP * 0.75);
+			const int low = (int) (EMOTION_CAP * 0.25);
+			int intensity = 1;
+
+			if (value >= high) {
+				intensity = 2;
+			} else if (value <= low) {
+				intensity = 0;
+			}
+
+			return intensity;
+		}
+
+		public static string EmotionName (Emotion emotion, int value) {
+			return EMOTION_NAMES[EmotionIntensity(value), (int) emotion];
+		}
+
 		public static int[] EdgeIndexes (int[] array) {
 			int maxAIndex = -1;
 			int maxBIndex = -1;
@@ -341,18 +403,6 @@ namespace ComplexLifeforms {
 			}
 
 			return maxIndex;
-		}
-
-		public static string EmotionName (Emotion emotion, int value) {
-			int intensity = 1;
-
-			if (value >= EMOTION_CAP * 0.75) {
-				intensity = 2;
-			} else if (value <= EMOTION_CAP * 0.25) {
-				intensity = 0;
-			}
-
-			return EMOTION_NAMES[intensity, (int) emotion];
 		}
 
 	}
