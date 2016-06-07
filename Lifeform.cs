@@ -325,10 +325,11 @@ namespace ComplexLifeforms {
 		}
 
 		public void Eat (int amount) {
-			if (!Alive || Mood.Asleep || World.Food <= 0 || _pendingKill) {
+			if (!Alive || Mood.Asleep || _pendingKill) {
 				return;
 			}
 
+			int deltaEnergy = 0;
 			int deltaFood = 0;
 			int deltaWater = 0;
 
@@ -337,9 +338,11 @@ namespace ComplexLifeforms {
 			}
 
 			if (Food < EatThreshold) {
+				deltaEnergy -= EnergyDrain;
 				deltaFood += amount;
 				deltaWater -= WaterDrain / 2;
 			} else {
+				deltaEnergy -= EnergyDrain / 2;
 				deltaFood += amount / 2;
 				deltaWater -= WaterDrain * 2;
 			}
@@ -353,6 +356,7 @@ namespace ComplexLifeforms {
 			World.Reclaim(0, -deltaWater);
 			Mood.Action(Urge.Eat);
 
+			Energy += deltaEnergy;
 			Food += deltaFood;
 			Water += deltaWater;
 			++EatCount;
@@ -371,10 +375,11 @@ namespace ComplexLifeforms {
 		}
 
 		public void Drink (int amount) {
-			if (!Alive || Mood.Asleep || World.Water <= 0 || _pendingKill) {
+			if (!Alive || Mood.Asleep || _pendingKill) {
 				return;
 			}
 
+			int deltaEnergy = 0;
 			int deltaWater = 0;
 
 			if (World.Water < amount) {
@@ -382,14 +387,17 @@ namespace ComplexLifeforms {
 			}
 
 			if (Water < DrinkThreshold) {
+				deltaEnergy -= EnergyDrain;
 				deltaWater += amount;
 			} else {
+				deltaEnergy -= EnergyDrain / 2;
 				deltaWater += amount / 2;
 			}
 
 			World.UseWater(deltaWater);
 			Mood.Action(Urge.Drink);
 
+			Energy += deltaEnergy;
 			Water += deltaWater;
 			++DrinkCount;
 

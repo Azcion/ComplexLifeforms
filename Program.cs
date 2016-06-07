@@ -11,7 +11,7 @@ namespace ComplexLifeforms {
 		private static Random _random;
 
 		private static readonly World WORLD = new World(5000000);
-		private static readonly Lifeform[] LIFEFORMS = new Lifeform[1000];
+		private static readonly Lifeform[] LIFEFORMS = new Lifeform[10000];
 
 		private const int CYCLES = 1000;
 
@@ -19,14 +19,15 @@ namespace ComplexLifeforms {
 
 		[STAThread]
 		private static void Main () {
-			_random = new Random();
+			int seed = Environment.TickCount;
+			_random = new Random(seed);
 
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
-				LIFEFORMS[i] = new Lifeform(WORLD, _random, healAmountScale:0.5);
+				LIFEFORMS[i] = new Lifeform(WORLD, _random);
 				LOG[i] = new string[CYCLES];
 			}
 
-			Console.WriteLine(World.ToStringHeader('|', true) + "|alive ");
+			Console.WriteLine(World.ToStringHeader('|', true) + "|alive " + $"{seed,54}");
 			Console.WriteLine(WORLD.ToString('|', true) + $"|{LIFEFORMS.Length,6}");
 
 			for (int i = 0; i < CYCLES; ++i) {
@@ -41,10 +42,10 @@ namespace ComplexLifeforms {
 					}
 
 					if (_random.Next(10) == 0) {
-						c.Eat(_random.Next(2, 10) * WORLD.Init.FoodDrain * 3);
+						c.Eat(_random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
 					}
 
-					if (_random.Next(6) == 0) {
+					if (_random.Next(5) == 0) {
 						c.Drink(_random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
 					}
 
@@ -159,17 +160,19 @@ namespace ComplexLifeforms {
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				Lifeform lifeform = LIFEFORMS[i];
 
-				if (lifeform.Hp == -1 && lifeform.DeathBy == DeathBy.None) {
-					foreach (string cycle in LOG[i]) {
-						if (string.IsNullOrEmpty(cycle)) {
-							continue;
-						}
+				if (lifeform.Hp != -1 || lifeform.DeathBy != DeathBy.None) {
+					continue;
+				}
 
-						Console.WriteLine(cycle);
+				foreach (string cycle in LOG[i]) {
+					if (string.IsNullOrEmpty(cycle)) {
+						continue;
 					}
 
-					break;
+					Console.WriteLine(cycle);
 				}
+
+				break;
 			}
 		}
 
