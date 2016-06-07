@@ -13,7 +13,7 @@ namespace ComplexLifeforms.Enums {
 		Disgust,
 		Anger,
 		Anticipation
-
+		
 	}
 
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using ComplexLifeforms.Enums;
 
@@ -14,9 +15,9 @@ namespace ComplexLifeforms {
 
 		/// <summary>Constructor parameters.</summary>
 		public readonly InitLifeform Init;
-
 		/// <summary>World in which resources will be exchanged.</summary>
 		public readonly World World;
+		/// <summary>Urge and emotion processor.</summary>
 		public readonly MoodManager Mood;
 
 		public readonly int HealCost;
@@ -49,6 +50,7 @@ namespace ComplexLifeforms {
 		/// <summary>
 		/// Unpacks SInitLifeform and uses its values.
 		/// </summary>
+		[SuppressMessage ("ReSharper", "UnusedMember.Global")]
 		public Lifeform (World world, InitLifeform init, Random random=null)
 				: this(world, random,
 						init.HpScale, init.EnergyScale,
@@ -409,8 +411,11 @@ namespace ComplexLifeforms {
 			string data = $"{Age,5}{s}{Hp,5}{s}{Energy,5}{s}{Food,5}{s}{Water,5}";
 
 			if (extended) {
+				int maxIndex = MoodManager.MaxIndex(Mood.EmotionValues);
+				string emotion = MoodManager.EmotionName(Mood.Emotion, maxIndex);
+
 				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{Mood.Emotion,-12}"
+						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}"
 						+ $"{s}{DeathBy,-12}{s}{(Mood.Asleep ? "yes" : "no"),-5}";
 			}
 

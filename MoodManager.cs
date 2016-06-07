@@ -24,10 +24,21 @@ namespace ComplexLifeforms {
 		private readonly Random _random;
 
 		private static readonly int[,] TYPE_VALUES = { { 1, 1, 1 }, { 2, 1, 1 }, { 3, 2, 1 } };
+		private static readonly string[,] EMOTION_NAMES = {
+				{ "Serenity", "Acceptance", "Apprehension", "Distraction",
+						"Pensiveness", "Boredom", "Annoyance", "Interest" },
+				{ "Joy", "Trust", "Fear", "Surprise",
+						"Sadness", "Disgust", "Anger", "Anticipation" },
+				{ "Ecstasy", "Admiration", "Terror", "Amazement",
+						"Grief", "Loathing", "Rage", "Vigilance" }
+		};
 
 		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
 		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
+
+		public const int URGE_CAP = 99;
+		public const int EMOTION_CAP = 99;
 
 		public MoodManager (Lifeform lifeform, Random random=null) {
 			Lifeform = lifeform;
@@ -95,8 +106,8 @@ namespace ComplexLifeforms {
 
 				if (u < 0) {
 					UrgeValues[i] = 0;
-				} else if (u > 99) {
-					UrgeValues[i] = 99;
+				} else if (u > URGE_CAP) {
+					UrgeValues[i] = URGE_CAP;
 				}
 			}
 
@@ -110,8 +121,8 @@ namespace ComplexLifeforms {
 
 				if (e < 0) {
 					EmotionValues[i] = 0;
-				} else if (e > 99) {
-					EmotionValues[i] = 99;
+				} else if (e > EMOTION_CAP) {
+					EmotionValues[i] = EMOTION_CAP;
 				}
 			}
 		}
@@ -327,6 +338,18 @@ namespace ComplexLifeforms {
 			}
 
 			return maxIndex;
+		}
+
+		public static string EmotionName (Emotion emotion, int value) {
+			int intensity = 1;
+
+			if (value >= EMOTION_CAP * 0.75) {
+				intensity = 2;
+			} else if (value <= EMOTION_CAP * 0.25) {
+				intensity = 0;
+			}
+
+			return EMOTION_NAMES[intensity, (int) emotion];
 		}
 
 	}
