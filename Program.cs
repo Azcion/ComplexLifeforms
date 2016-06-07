@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
+using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
 
@@ -15,6 +17,7 @@ namespace ComplexLifeforms {
 
 		private static readonly string[][] LOG = new string[LIFEFORMS.Length][];
 
+		[STAThread]
 		private static void Main () {
 			_random = new Random();
 
@@ -92,7 +95,7 @@ namespace ComplexLifeforms {
 				Console.WriteLine(lifeforms[i].ToString('|', true));
 			}
 
-			for (int i = 5; i > 0; --i) {
+			for (int i = 5; i > 1; --i) {
 				Console.WriteLine(lifeforms[lifeforms.Length - i].ToString('|', true));
 			}
 
@@ -103,7 +106,7 @@ namespace ComplexLifeforms {
 				Console.WriteLine(lifeforms[i].Mood.ToString('|'));
 			}
 
-			for (int i = 5; i > 0; --i) {
+			for (int i = 5; i > 1; --i) {
 				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString('|'));
 			}
 
@@ -146,6 +149,9 @@ namespace ComplexLifeforms {
 
 			double[] res = StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
+
+			// copy ages as CSV to clipboard
+			Clipboard.SetText(string.Join(",", ages));
 
 			// debugging
 			Console.WriteLine();

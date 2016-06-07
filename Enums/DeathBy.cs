@@ -1,4 +1,4 @@
-﻿namespace ComplexLifeforms {
+﻿namespace ComplexLifeforms.Enums {
 
 	public enum DeathBy {
 

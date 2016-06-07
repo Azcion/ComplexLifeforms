@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace ComplexLifeforms {
+namespace ComplexLifeforms.Enums {
 
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public enum Emotion {
