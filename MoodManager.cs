@@ -101,38 +101,7 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		private void ProcessMood () {
-			const int optimal = 30;
-			const int good = optimal / 4;
-			const int neutral = 0;
-			const int bad = -good;
-			const int terrible = -optimal;
-
-			int mood = MoodValue / 2;
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				int intensity = EmotionIntensity(EmotionValues[i]);
-				if (EmotionValues[i] != 0) {
-					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
-				}
-			}
-
-			if (mood > good) {
-				Mood = Mood.Great;
-			} else if (mood > neutral) {
-				Mood = Mood.Good;
-			} else if (mood > bad) {
-				Mood = Mood.Neutral;
-			} else if (mood > terrible) {
-				Mood = Mood.Bad;
-			} else {
-				Mood = Mood.Terrible;
-			}
-
-			MoodValue = mood;
-		}
-
-		protected internal void ClampValues () {
+		private void ClampValues () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
 				if (UrgeBias[i] == Tier.None) {
 					UrgeValues[i] = 0;
@@ -162,6 +131,37 @@ namespace ComplexLifeforms {
 					EmotionValues[i] = EMOTION_CAP;
 				}
 			}
+		}
+
+		private void ProcessMood () {
+			const int optimal = 30;
+			const int good = optimal / 4;
+			const int neutral = 0;
+			const int bad = -good;
+			const int terrible = -optimal;
+
+			int mood = MoodValue / 2;
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				int intensity = EmotionIntensity(EmotionValues[i]);
+				if (EmotionValues[i] != 0) {
+					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
+				}
+			}
+
+			if (mood > good) {
+				Mood = Mood.Great;
+			} else if (mood > neutral) {
+				Mood = Mood.Good;
+			} else if (mood > bad) {
+				Mood = Mood.Neutral;
+			} else if (mood > terrible) {
+				Mood = Mood.Bad;
+			} else {
+				Mood = Mood.Terrible;
+			}
+
+			MoodValue = mood;
 		}
 
 		public void Action (Urge action) {

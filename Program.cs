@@ -15,6 +15,7 @@ namespace ComplexLifeforms {
 
 		private const int CYCLES = 1000;
 
+		private const bool LOGGING = false;
 		private static readonly string[][] LOG = new string[LIFEFORMS.Length][];
 
 		[STAThread]
@@ -24,15 +25,23 @@ namespace ComplexLifeforms {
 
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				LIFEFORMS[i] = new Lifeform(WORLD, _random);
-				LOG[i] = new string[CYCLES];
+
+				if (LOGGING) {
+					LOG[i] = new string[CYCLES];
+				}
 			}
 
 			Console.WriteLine(World.ToStringHeader('|', true) + "|alive " + $"{seed,54}");
-			Console.WriteLine(WORLD.ToString('|', true) + $"|{LIFEFORMS.Length,6}");
+			Console.Write(WORLD.ToString('|', true) + $"|{LIFEFORMS.Length,6}");
 
+			int cursorColumn = Console.CursorTop;
+			int cursorLine = Console.CursorLeft;
+			Console.WriteLine("\nProcessing cycles...");
+			
+			int updates = 0;
 			for (int i = 0; i < CYCLES; ++i) {
 				int deadCount = 0;
-				
+
 				for (int j = 0; j < LIFEFORMS.Length; ++j) {
 					Lifeform c = LIFEFORMS[j];
 
@@ -50,8 +59,11 @@ namespace ComplexLifeforms {
 					}
 
 					c.Update();
+					++updates;
 
-					LOG[j][i] = c.ToString(extended: true);
+					if (LOGGING) {
+						LOG[j][i] = c.ToString(extended: true);
+					}
 				}
 
 				if (deadCount == LIFEFORMS.Length) {
@@ -60,13 +72,14 @@ namespace ComplexLifeforms {
 			}
 
 			int alive = 0;
-
 			foreach (Lifeform lifeform in LIFEFORMS) {
 				if (lifeform.Alive) {
 					++alive;
 				}
 			}
 
+			Console.SetCursorPosition(cursorLine, cursorColumn);
+			Console.WriteLine($"{updates + " cycles",54}");
 			Console.WriteLine(WORLD.ToString('|', true) + $"|{alive,6}");
 			Console.WriteLine();
 
@@ -164,12 +177,14 @@ namespace ComplexLifeforms {
 					continue;
 				}
 
-				foreach (string cycle in LOG[i]) {
-					if (string.IsNullOrEmpty(cycle)) {
-						continue;
-					}
+				if (LOGGING) {
+					foreach (string cycle in LOG[i]) {
+						if (string.IsNullOrEmpty(cycle)) {
+							continue;
+						}
 
-					Console.WriteLine(cycle);
+						Console.WriteLine(cycle);
+					}
 				}
 
 				break;

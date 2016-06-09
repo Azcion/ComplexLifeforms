@@ -307,7 +307,6 @@ namespace ComplexLifeforms {
 				_pendingKill = false;
 			}
 
-			Mood.ClampValues();
 			Alive = false;
 
 			if (DeathBy == DeathBy.None) {
