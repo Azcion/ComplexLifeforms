@@ -357,8 +357,8 @@ namespace ComplexLifeforms {
 			int maxBIndex = -1;
 			int minAIndex = -1;
 			int minBIndex = -1;
-			int maxAValue = array[0];
-			int maxBValue = array[0];
+			int maxAValue = 0;
+			int maxBValue = 0;
 			int minAValue = array[0];
 			int minBValue = array[0];
 
@@ -389,12 +389,12 @@ namespace ComplexLifeforms {
 			return indexes;
 		}
 
-		public static int MaxIndex<T> (IEnumerable<T> array) where T : IComparable<T> {
+		public static int MaxIndex (int[] array) {
 			int maxIndex = -1;
-			T maxValue = default(T);
+			int maxValue = 0;
 
 			int index = 0;
-			foreach (T value in array) {
+			foreach (int value in array) {
 				if (value.CompareTo(maxValue) > 0 || maxIndex == -1) {
 					maxIndex = index;
 					maxValue = value;
