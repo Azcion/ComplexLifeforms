@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
@@ -17,11 +18,11 @@ namespace ComplexLifeforms {
 
 		public int MoodValue { get; private set; }
 
-		public int[] UrgeValues { get; private set;}
-		public int[] EmotionValues { get; private set; }
+		public int[] UrgeValues { get; }
+		public int[] EmotionValues { get; }
 
-		public Tier[] UrgeBias { get; private set; }
-		public Tier[] EmotionBias { get; private set; }
+		public Tier[] UrgeBias { get; }
+		public Tier[] EmotionBias { get; }
 
 		protected internal bool Asleep;
 
@@ -42,13 +43,30 @@ namespace ComplexLifeforms {
 		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
-		public const int URGE_CAP = 99;
+		public const int URGE_CAP = 50;
 		public const int EMOTION_CAP = 99;
 
-		public MoodManager (Lifeform lifeform, Random random=null) {
-			Lifeform = lifeform;
-			_random = random ?? new Random();
+		[SuppressMessage("ReSharper", "UnusedMember.Global")]
+		public MoodManager (Lifeform lifeform,
+				IReadOnlyList<Tier> urgeBias, IReadOnlyList<Tier> emotionBias, Random random = null)
+				: this(lifeform, random) {
+			if (urgeBias.Count != URGE_COUNT || emotionBias.Count != EMOTION_COUNT) {
+				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Count} second:{emotionBias.Count}");
+				return;
+			}
 
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				UrgeBias[i] = urgeBias[i];
+			}
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				EmotionBias[i] = emotionBias[i];
+			}
+		}
+
+		public MoodManager (Lifeform lifeform, Random random=null) {
+			_random = random ?? new Random();
+			Lifeform = lifeform;
 			Asleep = false;
 
 			UrgeValues = new int[URGE_COUNT];
@@ -80,9 +98,7 @@ namespace ComplexLifeforms {
 		private void ProcessChanges () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
 				if (_random.Next((int) UrgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
-					if (Asleep) {
-						--UrgeValues[i];
-					} else {
+					if (!Asleep) {
 						++UrgeValues[i];
 					}
 				}
@@ -164,6 +180,56 @@ namespace ComplexLifeforms {
 			MoodValue = mood;
 		}
 
+		private static int[] EdgeIndexes (IEnumerable<int> array) {
+			int maxAIndex = -1;
+			int maxBIndex = -1;
+			int minAIndex = -1;
+			int minBIndex = -1;
+			int maxAValue = 0;
+			int maxBValue = 0;
+			int minAValue = EMOTION_CAP;
+			int minBValue = EMOTION_CAP;
+
+			int zeros = 0;
+			int index = 0;
+
+			foreach (int value in array) {
+				if (value == 0) {
+					++zeros;
+				}
+
+				if (value.CompareTo(maxAValue) > 0) {
+					maxBIndex = maxAIndex;
+					maxBValue = maxAValue;
+					maxAIndex = index;
+					maxAValue = value;
+				} else if (value.CompareTo(maxBValue) > 0) {
+					maxBIndex = index;
+					maxBValue = value;
+				}
+
+				if (value.CompareTo(minAValue) < 0) {
+					minBIndex = minAIndex;
+					minBValue = minAValue;
+					minAIndex = index;
+					minAValue = value;
+				} else if (value.CompareTo(minBValue) < 0) {
+					minBIndex = index;
+					minBValue = value;
+				}
+
+				++index;
+			}
+
+			if (zeros > 2) {
+				minAIndex = -1;
+				minBIndex = -1;
+			}
+
+			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
+			return indexes;
+		}
+
 		public void Action (Urge action) {
 			int iaction = (int) action;
 			int[] indexes = EdgeIndexes(UrgeValues);
@@ -191,7 +257,7 @@ namespace ComplexLifeforms {
 						emotions = new[] { Emotion.Disgust, Emotion.Sadness };
 						type = 1;
 					} else {
-						emotions = new[] { Emotion.Anticipation, Emotion.Sadness };
+						emotions = new[] { Emotion.Anticipation, Emotion.Sadness, Emotion.Trust };
 					}
 					break;
 				case Urge.Excrete:
@@ -209,7 +275,7 @@ namespace ComplexLifeforms {
 						emotions = new[] { Emotion.Disgust, Emotion.Anger };
 						type = 1;
 					} else {
-						emotions = new[] { Emotion.Anticipation, Emotion.Sadness };
+						emotions = new[] { Emotion.Anticipation, Emotion.Sadness, Emotion.Trust };
 					}
 					break;
 				case Urge.Sleep:
@@ -226,7 +292,7 @@ namespace ComplexLifeforms {
 						emotions = new[] { Emotion.Anger, Emotion.Joy };
 						type = 1;
 					} else {
-						emotions = new[] { Emotion.Joy, Emotion.Fear };
+						emotions = new[] { Emotion.Joy, Emotion.Fear, Emotion.Trust };
 					}
 					break;
 				case Urge.Heal:
@@ -243,7 +309,7 @@ namespace ComplexLifeforms {
 						emotions = new[] { Emotion.Fear, Emotion.Anticipation };
 						type = 1;
 					} else {
-						emotions = new[] { Emotion.Fear, Emotion.Anticipation };
+						emotions = new[] { Emotion.Fear, Emotion.Anticipation, Emotion.Trust };
 					}
 					break;
 				default:
@@ -258,21 +324,6 @@ namespace ComplexLifeforms {
 		public void AffectUrge (Urge urge, int delta) {
 			// todo expand
 			UrgeValues[(int) urge] += delta;
-		}
-
-		public void ApplyTiers (Tier[] urgeBias, Tier[] emotionBias) {
-			if (urgeBias.Length != URGE_COUNT || emotionBias.Length != EMOTION_COUNT) {
-				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Length} second:{emotionBias.Length}");
-				return;
-			}
-
-			for (int i = 0; i < URGE_COUNT; ++i) {
-				UrgeBias[i] = urgeBias[i];
-			}
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				EmotionBias[i] = emotionBias[i];
-			}
 		}
 
 		public string ToString (char separator=' ', bool mood=false) {
@@ -352,44 +403,7 @@ namespace ComplexLifeforms {
 			return EMOTION_NAMES[EmotionIntensity(value), (int) emotion];
 		}
 
-		public static int[] EdgeIndexes (int[] array) {
-			int maxAIndex = -1;
-			int maxBIndex = -1;
-			int minAIndex = -1;
-			int minBIndex = -1;
-			int maxAValue = 0;
-			int maxBValue = 0;
-			int minAValue = array[0];
-			int minBValue = array[0];
-
-			int index = 0;
-			foreach (int value in array) {
-				if (value.CompareTo(maxAValue) > 0 || maxAIndex == -1) {
-					maxBIndex = maxAIndex;
-					maxAIndex = index;
-					maxAValue = value;
-				} else if (value.CompareTo(maxBValue) > 0 || maxBIndex == -1) {
-					maxBIndex = index;
-					maxBValue = value;
-				}
-
-				if (value.CompareTo(minAValue) < 0 || minBIndex == -1) {
-					minBIndex = minAIndex;
-					minAIndex = index;
-					minAValue = value;
-				} else if (value.CompareTo(minBValue) < 0 || minBIndex == -1) {
-					minBIndex = index;
-					minBValue = value;
-				}
-
-				++index;
-			}
-
-			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
-			return indexes;
-		}
-
-		public static int MaxIndex (int[] array) {
+		public static int MaxIndex (IEnumerable<int> array) {
 			int maxIndex = -1;
 			int maxValue = 0;
 
