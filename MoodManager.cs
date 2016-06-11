@@ -7,26 +7,12 @@ namespace ComplexLifeforms {
 
 	public class MoodManager {
 
-		public Lifeform Lifeform;
+		public const int URGE_CAP = 50;
+		public const int EMOTION_CAP = 99;
 
-		/// <summary>Represents the current general mood.</summary>
-		public Mood Mood { get; private set; }
-		/// <summary>Represents the current strongest urge.</summary>
-		public Urge Urge { get; private set; }
-		/// <summary>Represents the current strongest emotion.</summary>
-		public Emotion Emotion { get; private set; }
-
-		public int MoodValue { get; private set; }
-
-		public int[] UrgeValues { get; }
-		public int[] EmotionValues { get; }
-
-		public Tier[] UrgeBias { get; }
-		public Tier[] EmotionBias { get; }
-
-		protected internal bool Asleep;
-
-		private readonly Random _random;
+		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
+		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
+		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
 		private static readonly int[] EMOTION_MOOD_EFFECT = { 10, 3, -1, 0, -4, -3, -5, 0 };
 		private static readonly int[,] TYPE_VALUES = { { 1, 1, 1 }, { 2, 1, 1 }, { 3, 2, 1 } };
@@ -41,12 +27,17 @@ namespace ComplexLifeforms {
 						"Remorse", "Contempt", "Aggression", "Optimism" }
 		};
 
-		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
-		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
-		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
+		private readonly Random _random;
+		private readonly Tier[] _emotionBias;
+		private readonly Tier[] _urgeBias;
+		private readonly int[] _emotionValues;
+		private readonly int[] _urgeValues;
 
-		public const int URGE_CAP = 50;
-		public const int EMOTION_CAP = 99;
+		private int _moodValue;
+
+		protected internal bool Asleep;
+
+		public Lifeform Lifeform;
 
 		[SuppressMessage("ReSharper", "UnusedMember.Global")]
 		public MoodManager (Lifeform lifeform,
@@ -58,11 +49,11 @@ namespace ComplexLifeforms {
 			}
 
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				UrgeBias[i] = urgeBias[i];
+				_urgeBias[i] = urgeBias[i];
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				EmotionBias[i] = emotionBias[i];
+				_emotionBias[i] = emotionBias[i];
 			}
 		}
 
@@ -71,82 +62,93 @@ namespace ComplexLifeforms {
 			Lifeform = lifeform;
 			Asleep = false;
 
-			UrgeValues = new int[URGE_COUNT];
-			EmotionValues = new int[EMOTION_COUNT];
+			_urgeValues = new int[URGE_COUNT];
+			_emotionValues = new int[EMOTION_COUNT];
 
-			UrgeBias = new Tier[URGE_COUNT];
-			EmotionBias = new Tier[EMOTION_COUNT];
+			_urgeBias = new Tier[URGE_COUNT];
+			_emotionBias = new Tier[EMOTION_COUNT];
 
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				UrgeBias[i] = (Tier) _random.Next(TIER_COUNT);
+				_urgeBias[i] = (Tier) _random.Next(TIER_COUNT);
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				EmotionBias[i] = (Tier) _random.Next(TIER_COUNT);
+				_emotionBias[i] = (Tier) _random.Next(TIER_COUNT);
 			}
 
 			Update();
 		}
+
+		/// <summary>Represents the current general mood.</summary>
+		public Mood Mood { get; private set; }
+
+		/// <summary>Represents the current strongest urge.</summary>
+		public Urge Urge { get; private set; }
+
+		/// <summary>Represents the current strongest emotion.</summary>
+		public Emotion Emotion { get; private set; }
+
+		public int[] EmotionValues => _emotionValues;
 
 		public void Update () {
 			ProcessChanges();
 			ClampValues();
 			ProcessMood();
 
-			Urge = (Urge) Utils.MaxIndex(UrgeValues);
-			Emotion = (Emotion) Utils.MaxIndex(EmotionValues);
+			Urge = (Urge) Utils.MaxIndex(_urgeValues);
+			Emotion = (Emotion) Utils.MaxIndex(_emotionValues);
 		}
 
 		private void ProcessChanges () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (_random.Next((int) UrgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
+				if (_random.Next((int) _urgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
 					if (!Asleep) {
-						++UrgeValues[i];
+						++_urgeValues[i];
 					}
 				}
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (Asleep && _random.Next(TIER_COUNT - (int) EmotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
-					EmotionValues[i] -= TIER_COUNT - (int) EmotionBias[i] + 1;
+				if (Asleep && _random.Next(TIER_COUNT - (int) _emotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
+					_emotionValues[i] -= TIER_COUNT - (int) _emotionBias[i] + 1;
 				}
 			}
 		}
 
 		private void AffectEmotions (IReadOnlyList<Emotion> emotions, int type) {
 			for (int i = 0; i < emotions.Count; ++i) {
-				EmotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
+				_emotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
 			}
 		}
 
 		private void ClampValues () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (UrgeBias[i] == Tier.None) {
-					UrgeValues[i] = 0;
+				if (_urgeBias[i] == Tier.None) {
+					_urgeValues[i] = 0;
 					continue;
 				}
 
-				int u = UrgeValues[i];
+				int u = _urgeValues[i];
 
 				if (u < 0) {
-					UrgeValues[i] = 0;
+					_urgeValues[i] = 0;
 				} else if (u > URGE_CAP) {
-					UrgeValues[i] = URGE_CAP;
+					_urgeValues[i] = URGE_CAP;
 				}
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (EmotionBias[i] == Tier.None) {
-					EmotionValues[i] = 0;
+				if (_emotionBias[i] == Tier.None) {
+					_emotionValues[i] = 0;
 					continue;
 				}
 
-				int e = EmotionValues[i];
+				int e = _emotionValues[i];
 
 				if (e < 0) {
-					EmotionValues[i] = 0;
+					_emotionValues[i] = 0;
 				} else if (e > EMOTION_CAP) {
-					EmotionValues[i] = EMOTION_CAP;
+					_emotionValues[i] = EMOTION_CAP;
 				}
 			}
 		}
@@ -158,11 +160,11 @@ namespace ComplexLifeforms {
 			const int bad = -good;
 			const int terrible = -optimal;
 
-			int mood = MoodValue / 2;
+			int mood = _moodValue / 2;
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				int intensity = EmotionIntensity(EmotionValues[i]);
-				if (EmotionValues[i] != 0) {
+				int intensity = EmotionIntensity(_emotionValues[i]);
+				if (_emotionValues[i] != 0) {
 					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
 				}
 			}
@@ -179,7 +181,7 @@ namespace ComplexLifeforms {
 				Mood = Mood.Terrible;
 			}
 
-			MoodValue = mood;
+			_moodValue = mood;
 		}
 
 		private static int[] EdgeIndexes (IEnumerable<int> array) {
@@ -286,7 +288,7 @@ namespace ComplexLifeforms {
 
 		public void Action (Urge action) {
 			int iaction = (int) action;
-			int[] indexes = EdgeIndexes(UrgeValues);
+			int[] indexes = EdgeIndexes(_urgeValues);
 			int maxA = indexes[0];
 			int maxB = indexes[1];
 			int minA = indexes[2];
@@ -388,29 +390,29 @@ namespace ComplexLifeforms {
 			}
 
 			AffectEmotions(emotions, type);
-			UrgeValues[iaction] -= 5;
+			_urgeValues[iaction] -= 5;
 		}
 
 		public void AffectUrge (Urge urge, int delta) {
 			// todo expand
-			UrgeValues[(int) urge] += delta;
+			_urgeValues[(int) urge] += delta;
 		}
 
 		public string ToString (char separator=' ', bool mood=false) {
 			char s = separator;
-			string data = $"{UrgeValues[0],2} {(int) UrgeBias[0]}";
+			string data = $"{_urgeValues[0],2} {(int) _urgeBias[0]}";
 
 			for (int i = 1; i < URGE_COUNT; ++i) {
-				data += $"{s}{UrgeValues[i],2} {(int) UrgeBias[i]}";
+				data += $"{s}{_urgeValues[i],2} {(int) _urgeBias[i]}";
 			}
 
 			data += s;
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				data += $"{s}{EmotionValues[i],2} {(int) EmotionBias[i]}";
+				data += $"{s}{_emotionValues[i],2} {(int) _emotionBias[i]}";
 			}
 
 			if (mood) {
-				data += $"{s}{s}{MoodValue,4}";
+				data += $"{s}{s}{_moodValue,4}";
 			}
 
 			return data;
