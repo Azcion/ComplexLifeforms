@@ -93,8 +93,8 @@ namespace ComplexLifeforms {
 			ClampValues();
 			ProcessMood();
 
-			Urge = (Urge) MaxIndex(UrgeValues);
-			Emotion = (Emotion) MaxIndex(EmotionValues);
+			Urge = (Urge) Utils.MaxIndex(UrgeValues);
+			Emotion = (Emotion) Utils.MaxIndex(EmotionValues);
 		}
 
 		private void ProcessChanges () {
@@ -230,6 +230,58 @@ namespace ComplexLifeforms {
 
 			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
 			return indexes;
+		}
+
+		private static int EmotionIntensity (int value) {
+			const int high = (int) (EMOTION_CAP * 0.75);
+			const int low = (int) (EMOTION_CAP * 0.25);
+			int intensity = 1;
+
+			if (value >= high) {
+				intensity = 2;
+			} else if (value <= low) {
+				intensity = 0;
+			}
+
+			return intensity;
+		}
+
+		private static int[] EmotionIntensity (IReadOnlyList<int> values) {
+			const double threshold = 0.25;
+			int emotionIndex = Utils.MaxIndex(values);
+			int emotionValue = values[emotionIndex];
+			int indexLeft;
+			int indexRight;
+
+			if (emotionIndex == 0) {
+				indexLeft = values.Count - 1;
+			} else {
+				indexLeft = emotionIndex - 1;
+			}
+
+			if (emotionIndex == values.Count - 1) {
+				indexRight = 0;
+			} else {
+				indexRight = emotionIndex + 1;
+			}
+
+			double valueLeft = values[indexLeft];
+			double valueRight = values[indexRight];
+
+			int[] result = { EmotionIntensity(emotionValue), emotionIndex };
+
+			if (valueLeft > valueRight && valueLeft / emotionValue >= threshold) {
+				result = new[] { 3, indexLeft };
+			} else if (valueRight > valueLeft && valueRight / emotionValue >= threshold) {
+				result = new[] { 3, indexRight };
+			}
+
+			return result;
+		}
+
+		public static string EmotionName (IReadOnlyList<int> values) {
+			int[] result = EmotionIntensity(values);
+			return EMOTION_NAMES[result[0], result[1]];
 		}
 
 		public void Action (Urge action) {
@@ -371,17 +423,17 @@ namespace ComplexLifeforms {
 			bool first = true;
 			foreach (string urge in Enum.GetNames(typeof(Urge))) {
 				if (first) {
-					data += $"{Truncate(urge, 4),-4}";
+					data += $"{Utils.Truncate(urge, 4),-4}";
 					first = false;
 					continue;
 				}
 
-				data += $"{s}{Truncate(urge, 4),-4}";
+				data += $"{s}{Utils.Truncate(urge, 4),-4}";
 			}
 
 			data += s;
 			foreach (string emotion in Enum.GetNames(typeof(Emotion))) {
-				data += $"{s}{Truncate(emotion, 4),-4}";
+				data += $"{s}{Utils.Truncate(emotion, 4),-4}";
 			}
 
 			if (mood) {
@@ -389,86 +441,6 @@ namespace ComplexLifeforms {
 			}
 
 			return data;
-		}
-
-		public static string Truncate (string value, int length) {
-			if (string.IsNullOrEmpty(value)) {
-				return value;
-			}
-
-			if (value.Length <= length) {
-				return value;
-			}
-
-			return value.Substring(0, length);
-		}
-
-		public static int EmotionIntensity (int value) {
-			const int high = (int) (EMOTION_CAP * 0.75);
-			const int low = (int) (EMOTION_CAP * 0.25);
-			int intensity = 1;
-
-			if (value >= high) {
-				intensity = 2;
-			} else if (value <= low) {
-				intensity = 0;
-			}
-
-			return intensity;
-		}
-
-		public static int[] EmotionIntensity (int[] values) {
-			const double threshold = 0.25;
-			int emotionIndex = MaxIndex(values);
-			int emotionValue = values[emotionIndex];
-			int indexLeft;
-			int indexRight;
-
-			if (emotionIndex == 0) {
-				indexLeft = values.Length - 1;
-			} else {
-				indexLeft = emotionIndex - 1;
-			}
-
-			if (emotionIndex == values.Length - 1) {
-				indexRight = 0;
-			} else {
-				indexRight = emotionIndex + 1;
-			}
-
-			double valueLeft = values[indexLeft];
-			double valueRight = values[indexRight];
-
-			int[] result = { EmotionIntensity(emotionValue), emotionIndex };
-
-			if (valueLeft > valueRight && valueLeft / emotionValue >= threshold) {
-				result = new[] { 3, indexLeft };
-			} else if (valueRight > valueLeft && valueRight / emotionValue >= threshold) {
-				result = new[] { 3, indexRight };
-			}
-
-			return result;
-		}
-
-		public static string EmotionName (int[] values) {
-			int[] result = EmotionIntensity(values);
-			return EMOTION_NAMES[result[0], result[1]];
-		}
-
-		public static int MaxIndex (IEnumerable<int> array) {
-			int maxIndex = -1;
-			int maxValue = 0;
-
-			int index = 0;
-			foreach (int value in array) {
-				if (value.CompareTo(maxValue) > 0 || maxIndex == -1) {
-					maxIndex = index;
-					maxValue = value;
-				}
-				++index;
-			}
-
-			return maxIndex;
 		}
 
 	}

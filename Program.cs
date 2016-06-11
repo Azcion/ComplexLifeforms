@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Forms;
 using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
@@ -18,7 +16,6 @@ namespace ComplexLifeforms {
 		private const bool LOGGING = false;
 		private static readonly string[][] LOG = new string[LIFEFORMS.Length][];
 
-		[STAThread]
 		private static void Main () {
 			int seed = Environment.TickCount;
 			_random = new Random(seed);
@@ -161,14 +158,15 @@ namespace ComplexLifeforms {
 				ages[i] = lifeforms[i].Age;
 			}
 
-			double[] res = StandardDeviation(ages);
+			double[] res = Utils.StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
-
-			// copy ages as CSV to clipboard
-			Clipboard.SetText(string.Join(",", ages));
 
 			// debugging
 			Console.WriteLine();
+
+			if (!LOGGING) {
+				return;
+			}
 
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				Lifeform lifeform = LIFEFORMS[i];
@@ -177,34 +175,16 @@ namespace ComplexLifeforms {
 					continue;
 				}
 
-				if (LOGGING) {
-					foreach (string cycle in LOG[i]) {
-						if (string.IsNullOrEmpty(cycle)) {
-							continue;
-						}
-
-						Console.WriteLine(cycle);
+				foreach (string cycle in LOG[i]) {
+					if (string.IsNullOrEmpty(cycle)) {
+						continue;
 					}
+
+					Console.WriteLine(cycle);
 				}
 
 				break;
 			}
-		}
-
-		public static double[] StandardDeviation (IEnumerable<int> values) {
-			double mean = 0;
-			double sum = 0;
-			int i = 0;
-
-			foreach (int val in values) {
-				double delta = val - mean;
-				mean += delta / ++i;
-				sum += delta * (val - mean);
-			}
-
-			double[] res = {Math.Sqrt(sum / i), mean};
-
-			return res;
 		}
 
 	}

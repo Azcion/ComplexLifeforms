@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace ComplexLifeforms {
 
@@ -109,39 +108,6 @@ namespace ComplexLifeforms {
 			}
 
 			return data;
-		}
-
-		public static InitWorld CSVToInit (string csv) {
-			object init = new InitWorld();
-			FieldInfo[] fields = typeof(InitWorld).GetFields();
-			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
-
-			if (fields.Length != values.Length) {
-				Console.WriteLine($"Number of values must match the number of SInitWorld properties. v:{values.Length}");
-				return null;
-			}
-
-			for (int i = 0; i < fields.Length; ++i) {
-				fields[i].SetValue(init, values[i]);
-			}
-
-			return (InitWorld) init;
-		}
-
-		public static string InitToCSV (InitWorld init) {
-			if (init == null) {
-				Console.WriteLine("SInitWorld was null.");
-				return "";
-			}
-
-			FieldInfo[] fields = typeof(InitWorld).GetFields();
-			string csv = fields[0].GetValue(init).ToString();
-
-			for (int i = 1; i < fields.Length; ++i) {
-				csv += $",{fields[i].GetValue(init)}";
-			}
-
-			return csv;
 		}
 
 	}

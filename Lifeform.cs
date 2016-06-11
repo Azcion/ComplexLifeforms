@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
@@ -446,40 +445,6 @@ namespace ComplexLifeforms {
 			}
 
 			return data;
-		}
-
-		public static InitLifeform CSVToInit (string csv) {
-			object init = new InitLifeform();
-			FieldInfo[] fields = typeof(InitLifeform).GetFields();
-			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
-
-			if (fields.Length != values.Length) {
-				Console.WriteLine("Number of values must match the number of SInitLifeform properties."
-						+ $" v:{values.Length}");
-				return null;
-			}
-
-			for (int i = 0; i < fields.Length; ++i) {
-				fields[i].SetValue(init, values[i]);
-			}
-
-			return (InitLifeform) init;
-		}
-
-		public static string InitToCSV (InitLifeform init) {
-			if (init == null) {
-				Console.WriteLine("SInitLifeform was null.");
-				return "";
-			}
-
-			FieldInfo[] fields = typeof(InitLifeform).GetFields();
-			string csv = fields[0].GetValue(init).ToString();
-
-			for (int i = 1; i < fields.Length; ++i) {
-				csv += $",{fields[i].GetValue(init)}";
-			}
-
-			return csv;
 		}
 
 	}
