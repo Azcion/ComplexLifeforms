@@ -36,9 +36,9 @@ namespace ComplexLifeforms {
 		/// <summary>
 		/// Return lifeform's remaining resources to the world, as well as those making up its body.
 		/// </summary>
-		public void Decompose (Lifeform lifeform) {
-			Food += lifeform.Food + lifeform.Init.Food;
-			Water += lifeform.Water + lifeform.Init.Water;
+		public void Decompose (int food, int water, InitLifeform init) {
+			Food += food + init.Food;
+			Water += water + init.Water;
 		}
 
 		/// <summary>

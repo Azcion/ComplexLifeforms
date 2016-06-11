@@ -8,48 +8,49 @@ namespace ComplexLifeforms {
 
 		private static int _id;
 
-		private bool _pendingKill;
+		private readonly int _healThreshold;
+		private readonly int _sleepThreshold;
+		private readonly int _eatThreshold;
+		private readonly int _drinkThreshold;
+
+		private readonly int _energyDrain;
+		private readonly int _foodDrain;
+		private readonly int _hpDrain;
+		private readonly int _waterDrain;
+
+		private readonly int _healAmount;
+		private readonly int _healCost;
 
 		public readonly int Id;
 
 		/// <summary>Constructor parameters.</summary>
 		public readonly InitLifeform Init;
-		/// <summary>World in which resources will be exchanged.</summary>
-		public readonly World World;
+
 		/// <summary>Urge and emotion processor.</summary>
 		public readonly MoodManager Mood;
 
-		public readonly int HealCost;
-		public readonly int HealAmount;
+		/// <summary>World in which resources will be exchanged.</summary>
+		public readonly World World;
 
-		public readonly int HpDrain;
-		public readonly int EnergyDrain;
-		public readonly int FoodDrain;
-		public readonly int WaterDrain;
+		private int _hp;
+		private int _energy;
+		private int _food;
+		private int _water;
 
-		public readonly int HealThreshold;
-		public readonly int SleepThreshold;
-		public readonly int EatThreshold;
-		public readonly int DrinkThreshold;
+		private DeathBy _deathBy;
+		private bool _alive;
+		private bool _pendingKill;
 
-		public bool Alive { get; private set; }
-		public DeathBy DeathBy { get; private set; }
-
-		public int Hp { get; private set; }
-		public int Energy { get; private set; }
-		public int Food { get; private set; }
-		public int Water { get; private set; }
-
-		public int Age { get; private set; }
-		public int HealCount { get; private set; }
-		public int SleepCount { get; private set; }
-		public int EatCount { get; private set; }
-		public int DrinkCount { get; private set; }
+		private int _age;
+		private int _healCount;
+		private int _sleepCount;
+		private int _eatCount;
+		private int _drinkCount;
 
 		/// <summary>
 		/// Unpacks SInitLifeform and uses its values.
 		/// </summary>
-		[SuppressMessage ("ReSharper", "UnusedMember.Global")]
+		[SuppressMessage("ReSharper", "UnusedMember.Global")]
 		public Lifeform (World world, InitLifeform init, Random random=null)
 				: this(world, random,
 						init.HpScale, init.EnergyScale,
@@ -72,8 +73,8 @@ namespace ComplexLifeforms {
 			Id = _id++;
 			World = world;
 			Mood = new MoodManager(this, random);
-			Alive = true;
-			DeathBy = DeathBy.None;
+			_alive = true;
+			_deathBy = DeathBy.None;
 
 			InitWorld w = world.Init;
 
@@ -87,47 +88,51 @@ namespace ComplexLifeforms {
 					healThreshold, sleepThreshold,
 					eatThreshold, drinkThreshold);
 
-			HealCost = (int) (w.HealCost * healCostScale);
-			HealAmount = (int) (w.HealAmount * healAmountScale);
+			_healCost = (int) (w.HealCost * healCostScale);
+			_healAmount = (int) (w.HealAmount * healAmountScale);
 
-			HpDrain = (int) (w.HpDrain * hpDrainScale);
-			EnergyDrain = (int) (w.EnergyDrain * energyDrainScale);
-			FoodDrain = (int) (w.FoodDrain * foodDrainScale);
-			WaterDrain = (int) (w.WaterDrain * waterDrainScale);
+			_hpDrain = (int) (w.HpDrain * hpDrainScale);
+			_energyDrain = (int) (w.EnergyDrain * energyDrainScale);
+			_foodDrain = (int) (w.FoodDrain * foodDrainScale);
+			_waterDrain = (int) (w.WaterDrain * waterDrainScale);
 
-			Hp = (int) (w.BaseHp * hpScale);
-			Energy = (int) (w.BaseEnergy * energyScale);
-			Food = (int) (w.BaseFood * foodScale);
-			Water = (int) (w.BaseWater * waterScale);
+			_hp = (int) (w.BaseHp * hpScale);
+			_energy = (int) (w.BaseEnergy * energyScale);
+			_food = (int) (w.BaseFood * foodScale);
+			_water = (int) (w.BaseWater * waterScale);
 
-			HealThreshold = (int) (Hp * healThreshold);
-			SleepThreshold = (int) (Energy * sleepThreshold);
-			EatThreshold = (int) (Food * eatThreshold);
-			DrinkThreshold = (int) (Water * drinkThreshold);
+			_healThreshold = (int) (_hp * healThreshold);
+			_sleepThreshold = (int) (_energy * sleepThreshold);
+			_eatThreshold = (int) (_food * eatThreshold);
+			_drinkThreshold = (int) (_water * drinkThreshold);
 		}
 
+		public int Age => _age;
+		public bool Alive => _alive;
+		public DeathBy DeathBy => _deathBy;
+
 		public void Update () {
-			if (!Alive) {
+			if (!_alive) {
 				return;
 			}
 
-			++Age;
+			++_age;
 
 			ProcessBodilyFunctions();
 			Heal();
 
 			if (Mood.Asleep) {
-				Hp += HpDrain * 2;
-				Energy += EnergyDrain * 8;
-				++SleepCount;
+				_hp += _hpDrain * 2;
+				_energy += _energyDrain * 8;
+				++_sleepCount;
 
-				if (Energy >= Init.Energy || Hp < HpDrain * 32) {
+				if (_energy >= Init.Energy || _hp < _hpDrain * 32) {
 					Mood.Asleep = false;
 				}
 			}
 
-			if (!Mood.Asleep && Energy < SleepThreshold) {
-				if (Energy < 0) {
+			if (!Mood.Asleep && _energy < _sleepThreshold) {
+				if (_energy < 0) {
 					Sleep(true);
 				}
 
@@ -136,7 +141,7 @@ namespace ComplexLifeforms {
 
 			Mood.Update();
 
-			if (Hp <= 0 || _pendingKill || DeathBy != DeathBy.None) {
+			if (_hp <= 0 || _pendingKill || _deathBy != DeathBy.None) {
 				Kill();
 			}
 		}
@@ -150,54 +155,54 @@ namespace ComplexLifeforms {
 			int deltaWater = 0;
 			DeathBy deltaDeathBy = DeathBy.None;
 
-			if (Water > Init.Water) {
+			if (_water > Init.Water) {
 				excreteOne = true;
-				deltaHp -= HpDrain * 8;
-				deltaEnergy -= EnergyDrain * 8;
-				deltaWater -= WaterDrain * 8;
+				deltaHp -= _hpDrain * 8;
+				deltaEnergy -= _energyDrain * 8;
+				deltaWater -= _waterDrain * 8;
 				deltaDeathBy = DeathBy.Overhydration;
-			} else if (Water > DrinkThreshold) {
+			} else if (_water > _drinkThreshold) {
 				excreteOne = true;
-				deltaEnergy -= EnergyDrain * 4;
-				deltaWater -= WaterDrain * 4;
-			} else if (Water > WaterDrain) {
-				deltaHp -= HpDrain / 2;
-				deltaEnergy -= EnergyDrain;
-				deltaWater -= WaterDrain;
-			} else if (Water > 0) {
-				deltaHp -= HpDrain * 4;
-				deltaEnergy -= EnergyDrain * 2;
-				deltaWater -= Water;
+				deltaEnergy -= _energyDrain * 4;
+				deltaWater -= _waterDrain * 4;
+			} else if (_water > _waterDrain) {
+				deltaHp -= _hpDrain / 2;
+				deltaEnergy -= _energyDrain;
+				deltaWater -= _waterDrain;
+			} else if (_water > 0) {
+				deltaHp -= _hpDrain * 4;
+				deltaEnergy -= _energyDrain * 2;
+				deltaWater -= _water;
 			} else {
-				deltaHp -= HpDrain * 16;
-				deltaEnergy -= EnergyDrain * 4;
+				deltaHp -= _hpDrain * 16;
+				deltaEnergy -= _energyDrain * 4;
 
 				if (deltaDeathBy == DeathBy.None) {
 					deltaDeathBy = DeathBy.Dehydration;
 				}
 			}
 
-			if (Food > Init.Food) {
+			if (_food > Init.Food) {
 				excreteTwo = true;
-				deltaHp -= HpDrain * 8;
-				deltaEnergy -= EnergyDrain * 8;
-				deltaFood -= FoodDrain * 8;
+				deltaHp -= _hpDrain * 8;
+				deltaEnergy -= _energyDrain * 8;
+				deltaFood -= _foodDrain * 8;
 				deltaDeathBy = DeathBy.Overeating;
-			} else if (Food > EatThreshold) {
+			} else if (_food > _eatThreshold) {
 				excreteTwo = true;
-				deltaEnergy -= EnergyDrain * 4;
-				deltaFood -= FoodDrain * 4;
-			} else if (Food > FoodDrain) {
-				deltaHp -= HpDrain / 2;
-				deltaEnergy -= EnergyDrain;
-				deltaFood -= FoodDrain;
-			} else if (Food > 0) {
-				deltaHp -= HpDrain * 4;
-				deltaEnergy -= EnergyDrain * 2;
-				deltaFood -= Food;
+				deltaEnergy -= _energyDrain * 4;
+				deltaFood -= _foodDrain * 4;
+			} else if (_food > _foodDrain) {
+				deltaHp -= _hpDrain / 2;
+				deltaEnergy -= _energyDrain;
+				deltaFood -= _foodDrain;
+			} else if (_food > 0) {
+				deltaHp -= _hpDrain * 4;
+				deltaEnergy -= _energyDrain * 2;
+				deltaFood -= _food;
 			} else {
-				deltaHp -= HpDrain * 16;
-				deltaEnergy -= EnergyDrain * 4;
+				deltaHp -= _hpDrain * 16;
+				deltaEnergy -= _energyDrain * 4;
 				deltaDeathBy = DeathBy.Starvation;
 			}
 
@@ -219,26 +224,26 @@ namespace ComplexLifeforms {
 
 			World.Reclaim(-deltaFood, -deltaWater);
 
-			Hp += deltaHp;
-			Energy += deltaEnergy;
-			Food += deltaFood;
-			Water += deltaWater;
+			_hp += deltaHp;
+			_energy += deltaEnergy;
+			_food += deltaFood;
+			_water += deltaWater;
 
-			if (Hp < 0 && DeathBy == DeathBy.None && deltaDeathBy != DeathBy.None) {
-				DeathBy = deltaDeathBy;
+			if (_hp < 0 && _deathBy == DeathBy.None && deltaDeathBy != DeathBy.None) {
+				_deathBy = deltaDeathBy;
 				_pendingKill = true;
 			}
 
-			if (Energy < 0) {
-				Energy = 0;
+			if (_energy < 0) {
+				_energy = 0;
 			}
 
-			if (Food < 0) {
-				Food = 0;
+			if (_food < 0) {
+				_food = 0;
 			}
 
-			if (Water < 0) {
-				Water = 0;
+			if (_water < 0) {
+				_water = 0;
 			}
 		}
 
@@ -246,10 +251,10 @@ namespace ComplexLifeforms {
 			Mood.Asleep = true;
 
 			if (didPassOut) {
-				Hp -= HpDrain * 10;
+				_hp -= _hpDrain * 10;
 				
-				if (Hp < 0 && DeathBy == DeathBy.None) {
-					DeathBy = DeathBy.Exhaustion;
+				if (_hp < 0 && _deathBy == DeathBy.None) {
+					_deathBy = DeathBy.Exhaustion;
 					_pendingKill = true;
 				}
 			}
@@ -258,23 +263,23 @@ namespace ComplexLifeforms {
 		}
 
 		private void Heal () {
-			if (Hp > HealThreshold || Mood.Asleep) {
+			if (_hp > _healThreshold || Mood.Asleep) {
 				return;
 			}
 
 			int deltaEnergy = 0;
 			int deltaFood = 0;
 			int deltaWater = 0;
-			int cost = HealCost + Age;
+			int cost = _healCost + _age;
 			int effectiveness = cost + cost;
 
-			if (Food <= cost) {
+			if (_food <= cost) {
 				Mood.AffectUrge(Urge.Eat, 1);
 
-				if (Food > 0) {
+				if (_food > 0) {
 					deltaEnergy -= cost / 2;
-					deltaFood -= Food;
-					effectiveness -= Food;
+					deltaFood -= _food;
+					effectiveness -= _food;
 				} else {
 					effectiveness -= cost;
 				}
@@ -283,13 +288,13 @@ namespace ComplexLifeforms {
 				deltaFood -= cost;
 			}
 
-			if (Water <= cost) {
+			if (_water <= cost) {
 				Mood.AffectUrge(Urge.Drink, 1);
 
-				if (Water > 0) {
+				if (_water > 0) {
 					deltaEnergy -= cost / 2;
-					deltaWater -= Water;
-					effectiveness -= Water;
+					deltaWater -= _water;
+					effectiveness -= _water;
 				} else {
 					effectiveness -= cost;
 				}
@@ -302,11 +307,11 @@ namespace ComplexLifeforms {
 			Mood.Action(Urge.Heal);
 			Mood.AffectUrge(Urge.Sleep, 2);
 
-			Hp += effectiveness / (cost + cost) * HealAmount;
-			Energy += deltaEnergy;
-			Food += deltaFood;
-			Water += deltaWater;
-			++HealCount;
+			_hp += effectiveness / (cost + cost) * _healAmount;
+			_energy += deltaEnergy;
+			_food += deltaFood;
+			_water += deltaWater;
+			++_healCount;
 		}
 
 		private void Kill () {
@@ -314,24 +319,24 @@ namespace ComplexLifeforms {
 				_pendingKill = false;
 			}
 
-			Alive = false;
+			_alive = false;
 
-			if (DeathBy == DeathBy.None) {
-				if (Energy <= 0) {
-					DeathBy = DeathBy.Exhaustion;
-				} else if (Food <= 0) {
-					DeathBy = DeathBy.Starvation;
-				} else if (Water <= 0) {
-					DeathBy = DeathBy.Dehydration;
+			if (_deathBy == DeathBy.None) {
+				if (_energy <= 0) {
+					_deathBy = DeathBy.Exhaustion;
+				} else if (_food <= 0) {
+					_deathBy = DeathBy.Starvation;
+				} else if (_water <= 0) {
+					_deathBy = DeathBy.Dehydration;
 				}
 			}
 
-			Hp = -1;
-			World.Decompose(this);
+			_hp = -1;
+			World.Decompose(_food, _water, Init);
 		}
 
 		public void Eat (int amount) {
-			if (!Alive || Mood.Asleep || _pendingKill) {
+			if (!_alive || Mood.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -343,17 +348,17 @@ namespace ComplexLifeforms {
 				amount = World.Food;
 			}
 
-			if (Food < EatThreshold) {
-				deltaEnergy -= EnergyDrain;
+			if (_food < _eatThreshold) {
+				deltaEnergy -= _energyDrain;
 				deltaFood += amount;
-				deltaWater -= WaterDrain / 2;
+				deltaWater -= _waterDrain / 2;
 			} else {
-				deltaEnergy -= EnergyDrain / 2;
+				deltaEnergy -= _energyDrain / 2;
 				deltaFood += amount / 2;
-				deltaWater -= WaterDrain * 2;
+				deltaWater -= _waterDrain * 2;
 			}
 
-			if (Water <= -deltaWater) {
+			if (_water <= -deltaWater) {
 				Mood.AffectUrge(Urge.Drink, 1);
 				return;
 			}
@@ -362,26 +367,26 @@ namespace ComplexLifeforms {
 			World.Reclaim(0, -deltaWater);
 			Mood.Action(Urge.Eat);
 
-			Energy += deltaEnergy;
-			Food += deltaFood;
-			Water += deltaWater;
-			++EatCount;
+			_energy += deltaEnergy;
+			_food += deltaFood;
+			_water += deltaWater;
+			++_eatCount;
 
-			if (Food > Init.Food) {
-				Hp -= HpDrain * 4;
+			if (_food > Init.Food) {
+				_hp -= _hpDrain * 4;
 
 				Mood.AffectUrge(Urge.Eat, -2);
 				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
-			if (Hp <= 0 && DeathBy == DeathBy.None) {
-				DeathBy = DeathBy.Overeating;
+			if (_hp <= 0 && _deathBy == DeathBy.None) {
+				_deathBy = DeathBy.Overeating;
 				_pendingKill = true;
 			}
 		}
 
 		public void Drink (int amount) {
-			if (!Alive || Mood.Asleep || _pendingKill) {
+			if (!_alive || Mood.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -392,44 +397,44 @@ namespace ComplexLifeforms {
 				amount = World.Water;
 			}
 
-			if (Water < DrinkThreshold) {
-				deltaEnergy -= EnergyDrain;
+			if (_water < _drinkThreshold) {
+				deltaEnergy -= _energyDrain;
 				deltaWater += amount;
 			} else {
-				deltaEnergy -= EnergyDrain / 2;
+				deltaEnergy -= _energyDrain / 2;
 				deltaWater += amount / 2;
 			}
 
 			World.UseWater(deltaWater);
 			Mood.Action(Urge.Drink);
 
-			Energy += deltaEnergy;
-			Water += deltaWater;
-			++DrinkCount;
+			_energy += deltaEnergy;
+			_water += deltaWater;
+			++_drinkCount;
 
-			if (Water > Init.Water) {
-				Hp -= HpDrain * 4;
+			if (_water > Init.Water) {
+				_hp -= _hpDrain * 4;
 
 				Mood.AffectUrge(Urge.Drink, -2);
 				Mood.AffectUrge(Urge.Excrete, 1);
 			}
 
-			if (Hp <= 0 && DeathBy == DeathBy.None) {
-				DeathBy = DeathBy.Overhydration;
+			if (_hp <= 0 && _deathBy == DeathBy.None) {
+				_deathBy = DeathBy.Overhydration;
 				_pendingKill = true;
 			}
 		}
 
 		public string ToString (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"{Age,5}{s}{Hp,5}{s}{Energy,5}{s}{Food,5}{s}{Water,5}";
+			string data = $"{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
 
 			if (extended) {
 				string emotion = MoodManager.EmotionName(Mood.EmotionValues);
 
-				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
+				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
 						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}{s}{Mood.Mood,-8}"
-						+ $"{s}{DeathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
+						+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
 			}
 
 			return data;

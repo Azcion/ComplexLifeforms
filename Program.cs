@@ -171,7 +171,7 @@ namespace ComplexLifeforms {
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				Lifeform lifeform = LIFEFORMS[i];
 
-				if (lifeform.Hp != -1 || lifeform.DeathBy != DeathBy.None) {
+				if (!lifeform.Alive || lifeform.DeathBy != DeathBy.None) {
 					continue;
 				}
 
