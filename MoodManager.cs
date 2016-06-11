@@ -36,7 +36,9 @@ namespace ComplexLifeforms {
 				{ "Joy", "Trust", "Fear", "Surprise",
 						"Sadness", "Disgust", "Anger", "Anticipation" },
 				{ "Ecstasy", "Admiration", "Terror", "Amazement",
-						"Grief", "Loathing", "Rage", "Vigilance" }
+						"Grief", "Loathing", "Rage", "Vigilance" },
+				{ "Love", "Submission", "Awe", "Disapproval",
+						"Remorse", "Contempt", "Aggression", "Optimism" }
 		};
 
 		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
@@ -415,8 +417,42 @@ namespace ComplexLifeforms {
 			return intensity;
 		}
 
-		public static string EmotionName (Emotion emotion, int value) {
-			return EMOTION_NAMES[EmotionIntensity(value), (int) emotion];
+		public static int[] EmotionIntensity (int[] values) {
+			const double threshold = 0.25;
+			int emotionIndex = MaxIndex(values);
+			int emotionValue = values[emotionIndex];
+			int indexLeft;
+			int indexRight;
+
+			if (emotionIndex == 0) {
+				indexLeft = values.Length - 1;
+			} else {
+				indexLeft = emotionIndex - 1;
+			}
+
+			if (emotionIndex == values.Length - 1) {
+				indexRight = 0;
+			} else {
+				indexRight = emotionIndex + 1;
+			}
+
+			double valueLeft = values[indexLeft];
+			double valueRight = values[indexRight];
+
+			int[] result = { EmotionIntensity(emotionValue), emotionIndex };
+
+			if (valueLeft > valueRight && valueLeft / emotionValue >= threshold) {
+				result = new[] { 3, indexLeft };
+			} else if (valueRight > valueLeft && valueRight / emotionValue >= threshold) {
+				result = new[] { 3, indexRight };
+			}
+
+			return result;
+		}
+
+		public static string EmotionName (int[] values) {
+			int[] result = EmotionIntensity(values);
+			return EMOTION_NAMES[result[0], result[1]];
 		}
 
 		public static int MaxIndex (IEnumerable<int> array) {

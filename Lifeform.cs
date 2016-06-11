@@ -426,8 +426,7 @@ namespace ComplexLifeforms {
 			string data = $"{Age,5}{s}{Hp,5}{s}{Energy,5}{s}{Food,5}{s}{Water,5}";
 
 			if (extended) {
-				int maxIndex = MoodManager.MaxIndex(Mood.EmotionValues);
-				string emotion = MoodManager.EmotionName(Mood.Emotion, Mood.EmotionValues[maxIndex]);
+				string emotion = MoodManager.EmotionName(Mood.EmotionValues);
 
 				data += $"{s}{HealCount,5}{s}{SleepCount,5}{s}{EatCount,5}{s}{DrinkCount,5}"
 						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}{s}{Mood.Mood,-8}"
