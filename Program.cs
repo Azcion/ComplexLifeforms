@@ -6,15 +6,14 @@ namespace ComplexLifeforms {
 
 	internal static class Program {
 
-		private static Random _random;
+		private const int CYCLES = 1000;
+		private const bool LOGGING = false;
 
 		private static readonly World WORLD = new World(5000000);
 		private static readonly Lifeform[] LIFEFORMS = new Lifeform[10000];
-
-		private const int CYCLES = 1000;
-
-		private const bool LOGGING = false;
 		private static readonly string[][] LOG = new string[LIFEFORMS.Length][];
+
+		private static Random _random;
 
 		private static void Main () {
 			int seed = Environment.TickCount;
