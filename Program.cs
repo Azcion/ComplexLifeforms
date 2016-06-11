@@ -162,11 +162,11 @@ namespace ComplexLifeforms {
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
 
 			// debugging
-			Console.WriteLine();
-
 			if (!LOGGING) {
 				return;
 			}
+
+			Console.WriteLine();
 
 			for (int i = 0; i < LIFEFORMS.Length; ++i) {
 				Lifeform lifeform = LIFEFORMS[i];

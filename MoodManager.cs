@@ -14,8 +14,14 @@ namespace ComplexLifeforms {
 		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
+		/// <summary>Represents the lifeform which this object belongs to. </summary>
+		public Lifeform Lifeform;
+
+		protected internal bool Asleep;
+
 		private static readonly int[] EMOTION_MOOD_EFFECT = { 10, 3, -1, 0, -4, -3, -5, 0 };
 		private static readonly int[,] TYPE_VALUES = { { 1, 1, 1 }, { 2, 1, 1 }, { 3, 2, 1 } };
+
 		private static readonly string[,] EMOTION_NAMES = {
 				{ "Serenity", "Acceptance", "Apprehension", "Distraction",
 						"Pensiveness", "Boredom", "Annoyance", "Interest" },
@@ -33,11 +39,11 @@ namespace ComplexLifeforms {
 		private readonly int[] _emotionValues;
 		private readonly int[] _urgeValues;
 
+		private Mood _mood;
+		private Urge _urge;
+		private Emotion _emotion;
+
 		private int _moodValue;
-
-		protected internal bool Asleep;
-
-		public Lifeform Lifeform;
 
 		[SuppressMessage("ReSharper", "UnusedMember.Global")]
 		public MoodManager (Lifeform lifeform,
@@ -79,211 +85,57 @@ namespace ComplexLifeforms {
 			Update();
 		}
 
+		public int[] UrgeValues => _urgeValues;
+		public int[] EmotionValues => _emotionValues;
+
 		/// <summary>Represents the current general mood.</summary>
-		public Mood Mood { get; private set; }
+		public Mood Mood => _mood;
 
 		/// <summary>Represents the current strongest urge.</summary>
-		public Urge Urge { get; private set; }
+		public Urge Urge => _urge;
 
 		/// <summary>Represents the current strongest emotion.</summary>
-		public Emotion Emotion { get; private set; }
+		public Emotion Emotion => _emotion;
 
-		public int[] EmotionValues => _emotionValues;
+		public static string EmotionName (IReadOnlyList<int> values) {
+			int[] result = EmotionIntensity(values);
+			return EMOTION_NAMES[result[0], result[1]];
+		}
+
+		public static string ToStringHeader (char separator=' ', bool mood=false) {
+			char s = separator;
+			string data = "";
+
+			bool first = true;
+			foreach (string urge in Enum.GetNames(typeof(Urge))) {
+				if (first) {
+					data += $"{Utils.Truncate(urge, 4),-4}";
+					first = false;
+					continue;
+				}
+
+				data += $"{s}{Utils.Truncate(urge, 4),-4}";
+			}
+
+			data += s;
+			foreach (string emotion in Enum.GetNames(typeof(Emotion))) {
+				data += $"{s}{Utils.Truncate(emotion, 4),-4}";
+			}
+
+			if (mood) {
+				data += $"{s}{s}mood";
+			}
+
+			return data;
+		}
 
 		public void Update () {
 			ProcessChanges();
 			ClampValues();
 			ProcessMood();
 
-			Urge = (Urge) Utils.MaxIndex(_urgeValues);
-			Emotion = (Emotion) Utils.MaxIndex(_emotionValues);
-		}
-
-		private void ProcessChanges () {
-			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (_random.Next((int) _urgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
-					if (!Asleep) {
-						++_urgeValues[i];
-					}
-				}
-			}
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (Asleep && _random.Next(TIER_COUNT - (int) _emotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
-					_emotionValues[i] -= TIER_COUNT - (int) _emotionBias[i] + 1;
-				}
-			}
-		}
-
-		private void AffectEmotions (IReadOnlyList<Emotion> emotions, int type) {
-			for (int i = 0; i < emotions.Count; ++i) {
-				_emotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
-			}
-		}
-
-		private void ClampValues () {
-			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (_urgeBias[i] == Tier.None) {
-					_urgeValues[i] = 0;
-					continue;
-				}
-
-				int u = _urgeValues[i];
-
-				if (u < 0) {
-					_urgeValues[i] = 0;
-				} else if (u > URGE_CAP) {
-					_urgeValues[i] = URGE_CAP;
-				}
-			}
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (_emotionBias[i] == Tier.None) {
-					_emotionValues[i] = 0;
-					continue;
-				}
-
-				int e = _emotionValues[i];
-
-				if (e < 0) {
-					_emotionValues[i] = 0;
-				} else if (e > EMOTION_CAP) {
-					_emotionValues[i] = EMOTION_CAP;
-				}
-			}
-		}
-
-		private void ProcessMood () {
-			const int optimal = 30;
-			const int good = optimal / 4;
-			const int neutral = 0;
-			const int bad = -good;
-			const int terrible = -optimal;
-
-			int mood = _moodValue / 2;
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				int intensity = EmotionIntensity(_emotionValues[i]);
-				if (_emotionValues[i] != 0) {
-					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
-				}
-			}
-
-			if (mood > good) {
-				Mood = Mood.Great;
-			} else if (mood > neutral) {
-				Mood = Mood.Good;
-			} else if (mood > bad) {
-				Mood = Mood.Neutral;
-			} else if (mood > terrible) {
-				Mood = Mood.Bad;
-			} else {
-				Mood = Mood.Terrible;
-			}
-
-			_moodValue = mood;
-		}
-
-		private static int[] EdgeIndexes (IEnumerable<int> array) {
-			int maxAIndex = -1;
-			int maxBIndex = -1;
-			int minAIndex = -1;
-			int minBIndex = -1;
-			int maxAValue = 0;
-			int maxBValue = 0;
-			int minAValue = EMOTION_CAP;
-			int minBValue = EMOTION_CAP;
-
-			int zeros = 0;
-			int index = 0;
-
-			foreach (int value in array) {
-				if (value == 0) {
-					++zeros;
-				}
-
-				if (value.CompareTo(maxAValue) > 0) {
-					maxBIndex = maxAIndex;
-					maxBValue = maxAValue;
-					maxAIndex = index;
-					maxAValue = value;
-				} else if (value.CompareTo(maxBValue) > 0) {
-					maxBIndex = index;
-					maxBValue = value;
-				}
-
-				if (value.CompareTo(minAValue) < 0) {
-					minBIndex = minAIndex;
-					minBValue = minAValue;
-					minAIndex = index;
-					minAValue = value;
-				} else if (value.CompareTo(minBValue) < 0) {
-					minBIndex = index;
-					minBValue = value;
-				}
-
-				++index;
-			}
-
-			if (zeros > 2) {
-				minAIndex = -1;
-				minBIndex = -1;
-			}
-
-			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
-			return indexes;
-		}
-
-		private static int EmotionIntensity (int value) {
-			const int high = (int) (EMOTION_CAP * 0.75);
-			const int low = (int) (EMOTION_CAP * 0.25);
-			int intensity = 1;
-
-			if (value >= high) {
-				intensity = 2;
-			} else if (value <= low) {
-				intensity = 0;
-			}
-
-			return intensity;
-		}
-
-		private static int[] EmotionIntensity (IReadOnlyList<int> values) {
-			const double threshold = 0.25;
-			int emotionIndex = Utils.MaxIndex(values);
-			int emotionValue = values[emotionIndex];
-			int indexLeft;
-			int indexRight;
-
-			if (emotionIndex == 0) {
-				indexLeft = values.Count - 1;
-			} else {
-				indexLeft = emotionIndex - 1;
-			}
-
-			if (emotionIndex == values.Count - 1) {
-				indexRight = 0;
-			} else {
-				indexRight = emotionIndex + 1;
-			}
-
-			double valueLeft = values[indexLeft];
-			double valueRight = values[indexRight];
-
-			int[] result = { EmotionIntensity(emotionValue), emotionIndex };
-
-			if (valueLeft > valueRight && valueLeft / emotionValue >= threshold) {
-				result = new[] { 3, indexLeft };
-			} else if (valueRight > valueLeft && valueRight / emotionValue >= threshold) {
-				result = new[] { 3, indexRight };
-			}
-
-			return result;
-		}
-
-		public static string EmotionName (IReadOnlyList<int> values) {
-			int[] result = EmotionIntensity(values);
-			return EMOTION_NAMES[result[0], result[1]];
+			_urge = (Urge) Utils.MaxIndex(_urgeValues);
+			_emotion = (Emotion) Utils.MaxIndex(_emotionValues);
 		}
 
 		public void Action (Urge action) {
@@ -389,7 +241,10 @@ namespace ComplexLifeforms {
 					return;
 			}
 
-			AffectEmotions(emotions, type);
+			for (int i = 0; i < emotions.Length; ++i) {
+				_emotionValues[(int) emotions[i]] += TYPE_VALUES[type, i];
+			}
+
 			_urgeValues[iaction] -= 5;
 		}
 
@@ -418,31 +273,180 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
-		public static string ToStringHeader (char separator=' ', bool mood=false) {
-			char s = separator;
-			string data = "";
+		private static int[] EdgeIndexes (IEnumerable<int> array) {
+			int maxAIndex = -1;
+			int maxBIndex = -1;
+			int minAIndex = -1;
+			int minBIndex = -1;
+			int maxAValue = 0;
+			int maxBValue = 0;
+			int minAValue = EMOTION_CAP;
+			int minBValue = EMOTION_CAP;
 
-			bool first = true;
-			foreach (string urge in Enum.GetNames(typeof(Urge))) {
-				if (first) {
-					data += $"{Utils.Truncate(urge, 4),-4}";
-					first = false;
+			int zeros = 0;
+			int index = 0;
+
+			foreach (int value in array) {
+				if (value == 0) {
+					++zeros;
+				}
+
+				if (value.CompareTo(maxAValue) > 0) {
+					maxBIndex = maxAIndex;
+					maxBValue = maxAValue;
+					maxAIndex = index;
+					maxAValue = value;
+				} else if (value.CompareTo(maxBValue) > 0) {
+					maxBIndex = index;
+					maxBValue = value;
+				}
+
+				if (value.CompareTo(minAValue) < 0) {
+					minBIndex = minAIndex;
+					minBValue = minAValue;
+					minAIndex = index;
+					minAValue = value;
+				} else if (value.CompareTo(minBValue) < 0) {
+					minBIndex = index;
+					minBValue = value;
+				}
+
+				++index;
+			}
+
+			if (zeros > 2) {
+				minAIndex = -1;
+				minBIndex = -1;
+			}
+
+			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
+			return indexes;
+		}
+
+		private static int EmotionIntensity (int value) {
+			const int high = (int) (EMOTION_CAP * 0.75);
+			const int low = (int) (EMOTION_CAP * 0.25);
+			int intensity = 1;
+
+			if (value >= high) {
+				intensity = 2;
+			} else if (value <= low) {
+				intensity = 0;
+			}
+
+			return intensity;
+		}
+
+		private static int[] EmotionIntensity (IReadOnlyList<int> values) {
+			const double threshold = 0.25;
+			int emotionIndex = Utils.MaxIndex(values);
+			int emotionValue = values[emotionIndex];
+			int indexLeft;
+			int indexRight;
+
+			if (emotionIndex == 0) {
+				indexLeft = values.Count - 1;
+			} else {
+				indexLeft = emotionIndex - 1;
+			}
+
+			if (emotionIndex == values.Count - 1) {
+				indexRight = 0;
+			} else {
+				indexRight = emotionIndex + 1;
+			}
+
+			double valueLeft = values[indexLeft];
+			double valueRight = values[indexRight];
+
+			int[] result = { EmotionIntensity(emotionValue), emotionIndex };
+
+			if (valueLeft > valueRight && valueLeft / emotionValue >= threshold) {
+				result = new[] { 3, indexLeft };
+			} else if (valueRight > valueLeft && valueRight / emotionValue >= threshold) {
+				result = new[] { 3, indexRight };
+			}
+
+			return result;
+		}
+
+		private void ProcessChanges () {
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				if (_random.Next((int) _urgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
+					if (!Asleep) {
+						++_urgeValues[i];
+					}
+				}
+			}
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				if (Asleep && _random.Next(TIER_COUNT - (int) _emotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
+					_emotionValues[i] -= TIER_COUNT - (int) _emotionBias[i] + 1;
+				}
+			}
+		}
+
+		private void ProcessMood () {
+			const int optimal = 30;
+			const int good = optimal / 4;
+			const int neutral = 0;
+			const int bad = -good;
+			const int terrible = -optimal;
+
+			int mood = _moodValue / 2;
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				int intensity = EmotionIntensity(_emotionValues[i]);
+				if (_emotionValues[i] != 0) {
+					mood += (intensity + 1) * EMOTION_MOOD_EFFECT[i];
+				}
+			}
+
+			if (mood > good) {
+				_mood = Mood.Great;
+			} else if (mood > neutral) {
+				_mood = Mood.Good;
+			} else if (mood > bad) {
+				_mood = Mood.Neutral;
+			} else if (mood > terrible) {
+				_mood = Mood.Bad;
+			} else {
+				_mood = Mood.Terrible;
+			}
+
+			_moodValue = mood;
+		}
+
+		private void ClampValues () {
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				if (_urgeBias[i] == Tier.None) {
+					_urgeValues[i] = 0;
 					continue;
 				}
 
-				data += $"{s}{Utils.Truncate(urge, 4),-4}";
+				int u = _urgeValues[i];
+
+				if (u < 0) {
+					_urgeValues[i] = 0;
+				} else if (u > URGE_CAP) {
+					_urgeValues[i] = URGE_CAP;
+				}
 			}
 
-			data += s;
-			foreach (string emotion in Enum.GetNames(typeof(Emotion))) {
-				data += $"{s}{Utils.Truncate(emotion, 4),-4}";
-			}
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				if (_emotionBias[i] == Tier.None) {
+					_emotionValues[i] = 0;
+					continue;
+				}
 
-			if (mood) {
-				data += $"{s}{s}mood";
-			}
+				int e = _emotionValues[i];
 
-			return data;
+				if (e < 0) {
+					_emotionValues[i] = 0;
+				} else if (e > EMOTION_CAP) {
+					_emotionValues[i] = EMOTION_CAP;
+				}
+			}
 		}
 
 	}
