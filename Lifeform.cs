@@ -263,6 +263,7 @@ namespace ComplexLifeforms {
 				return;
 			}
 
+			int deltaEnergy = 0;
 			int deltaFood = 0;
 			int deltaWater = 0;
 			int cost = HealCost + Age;
@@ -272,12 +273,14 @@ namespace ComplexLifeforms {
 				Mood.AffectUrge(Urge.Eat, 1);
 
 				if (Food > 0) {
+					deltaEnergy -= cost / 2;
 					deltaFood -= Food;
 					effectiveness -= Food;
 				} else {
 					effectiveness -= cost;
 				}
 			} else {
+				deltaEnergy -= cost;
 				deltaFood -= cost;
 			}
 
@@ -285,18 +288,23 @@ namespace ComplexLifeforms {
 				Mood.AffectUrge(Urge.Drink, 1);
 
 				if (Water > 0) {
+					deltaEnergy -= cost / 2;
 					deltaWater -= Water;
+					effectiveness -= Water;
 				} else {
 					effectiveness -= cost;
 				}
 			} else {
+				deltaEnergy -= cost;
 				deltaWater -= cost;
 			}
 
 			World.Reclaim(-deltaFood, -deltaWater);
 			Mood.Action(Urge.Heal);
+			Mood.AffectUrge(Urge.Sleep, 2);
 
 			Hp += effectiveness / (cost + cost) * HealAmount;
+			Energy += deltaEnergy;
 			Food += deltaFood;
 			Water += deltaWater;
 			++HealCount;

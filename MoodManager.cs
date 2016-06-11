@@ -244,16 +244,20 @@ namespace ComplexLifeforms {
 			switch (action) {
 				case Urge.Eat:
 				case Urge.Drink:
-					if (iaction == maxA) {  // highest
+					if (iaction == maxA) {
+						// highest
 						emotions = new[] { Emotion.Joy, Emotion.Surprise, Emotion.Trust };
 						type = 2;
-					} else if (iaction == maxB) {  // second highest
+					} else if (iaction == maxB) {
+						// second highest
 						emotions = new[] { Emotion.Joy, Emotion.Anticipation };
 						type = 1;
-					} else if (iaction == minA) {  // lowest
+					} else if (iaction == minA) {
+						// lowest
 						emotions = new[] { Emotion.Disgust, Emotion.Sadness, Emotion.Anger };
 						type = 2;
-					} else if (iaction == minB) {  // second lowest
+					} else if (iaction == minB) {
+						// second lowest
 						emotions = new[] { Emotion.Disgust, Emotion.Sadness };
 						type = 1;
 					} else {
@@ -262,16 +266,20 @@ namespace ComplexLifeforms {
 					break;
 				case Urge.Excrete:
 				case Urge.Reproduce:
-					if (iaction == maxA) {  // highest
+					if (iaction == maxA) {
+						// highest
 						emotions = new[] { Emotion.Joy, Emotion.Trust, Emotion.Surprise };
 						type = 2;
-					} else if (iaction == maxB) {  // second highest
+					} else if (iaction == maxB) {
+						// second highest
 						emotions = new[] { Emotion.Joy, Emotion.Anticipation };
 						type = 1;
-					} else if (iaction == minA) {  // lowest
+					} else if (iaction == minA) {
+						// lowest
 						emotions = new[] { Emotion.Disgust, Emotion.Anger, Emotion.Fear };
 						type = 2;
-					} else if (iaction == minB) {  // second lowest
+					} else if (iaction == minB) {
+						// second lowest
 						emotions = new[] { Emotion.Disgust, Emotion.Anger };
 						type = 1;
 					} else {
@@ -279,16 +287,20 @@ namespace ComplexLifeforms {
 					}
 					break;
 				case Urge.Sleep:
-					if (iaction == maxA) {  // highest
+					if (iaction == maxA) {
+						// highest
 						emotions = new[] { Emotion.Joy, Emotion.Fear };
 						type = 2;
-					} else if (iaction == maxB) {  // second highest
+					} else if (iaction == maxB) {
+						// second highest
 						emotions = new[] { Emotion.Joy, Emotion.Fear };
 						type = 1;
-					} else if (iaction == minA) {  // lowest
+					} else if (iaction == minA) {
+						// lowest
 						emotions = new[] { Emotion.Anger, Emotion.Joy };
 						type = 2;
-					} else if (iaction == minB) {  // second lowest
+					} else if (iaction == minB) {
+						// second lowest
 						emotions = new[] { Emotion.Anger, Emotion.Joy };
 						type = 1;
 					} else {
@@ -296,16 +308,20 @@ namespace ComplexLifeforms {
 					}
 					break;
 				case Urge.Heal:
-					if (iaction == maxA) {  // highest
+					if (iaction == maxA) {
+						// highest
 						emotions = new[] { Emotion.Joy, Emotion.Fear, Emotion.Anticipation };
 						type = 2;
-					} else if (iaction == maxB) {  // second highest
+					} else if (iaction == maxB) {
+						// second highest
 						emotions = new[] { Emotion.Fear, Emotion.Joy };
 						type = 1;
-					} else if (iaction == minA) {  // lowest
+					} else if (iaction == minA) {
+						// lowest
 						emotions = new[] { Emotion.Fear, Emotion.Anticipation, Emotion.Anger };
 						type = 2;
-					} else if (iaction == minB) {  // second lowest
+					} else if (iaction == minB) {
+						// second lowest
 						emotions = new[] { Emotion.Fear, Emotion.Anticipation };
 						type = 1;
 					} else {
