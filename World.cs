@@ -7,13 +7,11 @@ namespace ComplexLifeforms {
 		/// <summary>Constructor parameters.</summary>
 		public readonly InitWorld Init;
 
-		/// <summary>Amount of available food in the world.</summary>
-		public int Food { get; private set; }
-		/// <summary>Amount of available water in the world.</summary>
-		public int Water { get; private set; }
+		private int _food;
+		private int _water;
 
-		public int FoodUseCount { get; private set; }
-		public int WaterUseCount { get; private set; }
+		private int _foodUseCount;
+		private int _waterUseCount;
 
 		public World (int size, double foodScale =.1, double waterScale=.4,
 				int baseHp=1000, int baseEnergy=1000,
@@ -29,16 +27,33 @@ namespace ComplexLifeforms {
 					hpDrain, energyDrain,
 					foodDrain, waterDrain);
 
-			Food = Init.StartingFood;
-			Water = Init.StartingWater;
+			_food = Init.StartingFood;
+			_water = Init.StartingWater;
+		}
+
+		/// <summary>Amount of available food in the world.</summary>
+		public int Food => _food;
+
+		/// <summary>Amount of available water in the world.</summary>
+		public int Water => _water;
+
+		public static string ToStringHeader (char separator=' ', bool extended=false) {
+			char s = separator;
+			string data = $"{"size",-10}{s}{"food",-10}{s}{"water",-10}";
+
+			if (extended) {
+				data += $"{s}eaten  {s}drank  ";
+			}
+
+			return data;
 		}
 
 		/// <summary>
 		/// Return lifeform's remaining resources to the world, as well as those making up its body.
 		/// </summary>
 		public void Decompose (int food, int water, InitLifeform init) {
-			Food += food + init.Food;
-			Water += water + init.Water;
+			_food += food + init.Food;
+			_water += water + init.Water;
 		}
 
 		/// <summary>
@@ -50,8 +65,8 @@ namespace ComplexLifeforms {
 				return;
 			}
 
-			Food += food;
-			Water += water;
+			_food += food;
+			_water += water;
 		}
 
 		/// <summary>
@@ -62,13 +77,13 @@ namespace ComplexLifeforms {
 				Console.WriteLine($"Food can not be negative. f:{amount}");
 			}
 
-			Food -= amount;
+			_food -= amount;
 
-			if (Food < 0) {
-				Food = 0;
+			if (_food < 0) {
+				_food = 0;
 			}
 
-			++FoodUseCount;
+			++_foodUseCount;
 		}
 
 		/// <summary>
@@ -79,32 +94,21 @@ namespace ComplexLifeforms {
 				Console.WriteLine($"Water can not be negative. w:{amount}");
 			}
 
-			Water -= amount;
+			_water -= amount;
 
-			if (Water < 0) {
-				Water = 0;
+			if (_water < 0) {
+				_water = 0;
 			}
 
-			++WaterUseCount;
+			++_waterUseCount;
 		}
 
 		public string ToString (char separator=' ', bool extended=false) {
 			char s = separator;
-			string data = $"{Init.Size,10}{s}{Food,10}{s}{Water,10}";
+			string data = $"{Init.Size,10}{s}{_food,10}{s}{_water,10}";
 
 			if (extended) {
-				data += $"{s}{FoodUseCount,7}{s}{WaterUseCount,7}";
-			}
-
-			return data;
-		}
-
-		public static string ToStringHeader (char separator=' ', bool extended=false) {
-			char s = separator;
-			string data = $"{"size",-10}{s}{"food",-10}{s}{"water",-10}";
-
-			if (extended) {
-				data += $"{s}eaten  {s}drank  ";
+				data += $"{s}{_foodUseCount,7}{s}{_waterUseCount,7}";
 			}
 
 			return data;
