@@ -4,9 +4,11 @@ using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
 
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public class Lifeform {
 
 		/// <summary>Unique ID assigned to this object.</summary>
+		[SuppressMessage ("ReSharper", "NotAccessedField.Global")]
 		public readonly int Id;
 
 		/// <summary>Constructor parameters.</summary>
@@ -250,7 +252,7 @@ namespace ComplexLifeforms {
 			string data = $"{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
 
 			if (extended) {
-				string emotion = MoodManager.EmotionName(Mood.EmotionValues);
+				string emotion = MoodManager.EmotionName(Mood);
 
 				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
 						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}{s}{Mood.Mood,-8}"

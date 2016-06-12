@@ -5,6 +5,7 @@ using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
 
+	[SuppressMessage ("ReSharper", "MemberCanBePrivate.Global")]
 	public class MoodManager {
 
 		public const int URGE_CAP = 50;
@@ -14,7 +15,8 @@ namespace ComplexLifeforms {
 		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
-		/// <summary>Represents the lifeform which this object belongs to. </summary>
+		/// <summary>Represents the lifeform which this object belongs to.</summary>
+		[SuppressMessage ("ReSharper", "NotAccessedField.Global")]
 		public Lifeform Lifeform;
 
 		protected internal bool Asleep;
@@ -85,9 +87,6 @@ namespace ComplexLifeforms {
 			Update();
 		}
 
-		public int[] UrgeValues => _urgeValues;
-		public int[] EmotionValues => _emotionValues;
-
 		/// <summary>Represents the current general mood.</summary>
 		public Mood Mood => _mood;
 
@@ -97,8 +96,8 @@ namespace ComplexLifeforms {
 		/// <summary>Represents the current strongest emotion.</summary>
 		public Emotion Emotion => _emotion;
 
-		public static string EmotionName (IReadOnlyList<int> values) {
-			int[] result = EmotionIntensity(values);
+		public static string EmotionName (MoodManager mood) {
+			int[] result = EmotionIntensity(mood._emotionValues);
 			return EMOTION_NAMES[result[0], result[1]];
 		}
 
