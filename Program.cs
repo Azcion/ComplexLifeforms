@@ -16,6 +16,8 @@ namespace ComplexLifeforms {
 		private static Random _random;
 
 		private static void Main () {
+			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
+
 			int seed = Environment.TickCount;
 			_random = new Random(seed);
 
