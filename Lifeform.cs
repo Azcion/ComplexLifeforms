@@ -252,67 +252,19 @@ namespace ComplexLifeforms {
 		private void ProcessBodilyFunctions () {
 			bool excreteOne = false;
 			bool excreteTwo = false;
-			int deltaHp = 0;
-			int deltaEnergy = 0;
-			int deltaFood = 0;
-			int deltaWater = 0;
-			DeathBy deltaDeathBy = DeathBy.None;
+			int dHp = 0;
+			int dEnergy = 0;
+			int dFood = 0;
+			int dWater = 0;
+			DeathBy dDeathBy = DeathBy.None;
 
-			if (_water > Init.Water) {
-				excreteOne = true;
-				deltaHp -= _hpDrain * 8;
-				deltaEnergy -= _energyDrain * 8;
-				deltaWater -= _waterDrain * 8;
-				deltaDeathBy = DeathBy.Overhydration;
-			} else if (_water > _drinkThreshold) {
-				excreteOne = true;
-				deltaEnergy -= _energyDrain * 4;
-				deltaWater -= _waterDrain * 4;
-			} else if (_water > _waterDrain) {
-				deltaHp -= _hpDrain / 2;
-				deltaEnergy -= _energyDrain;
-				deltaWater -= _waterDrain;
-			} else if (_water > 0) {
-				deltaHp -= _hpDrain * 4;
-				deltaEnergy -= _energyDrain * 2;
-				deltaWater -= _water;
-			} else {
-				deltaHp -= _hpDrain * 16;
-				deltaEnergy -= _energyDrain * 4;
-
-				if (deltaDeathBy == DeathBy.None) {
-					deltaDeathBy = DeathBy.Dehydration;
-				}
-			}
-
-			if (_food > Init.Food) {
-				excreteTwo = true;
-				deltaHp -= _hpDrain * 8;
-				deltaEnergy -= _energyDrain * 8;
-				deltaFood -= _foodDrain * 8;
-				deltaDeathBy = DeathBy.Overeating;
-			} else if (_food > _eatThreshold) {
-				excreteTwo = true;
-				deltaEnergy -= _energyDrain * 4;
-				deltaFood -= _foodDrain * 4;
-			} else if (_food > _foodDrain) {
-				deltaHp -= _hpDrain / 2;
-				deltaEnergy -= _energyDrain;
-				deltaFood -= _foodDrain;
-			} else if (_food > 0) {
-				deltaHp -= _hpDrain * 4;
-				deltaEnergy -= _energyDrain * 2;
-				deltaFood -= _food;
-			} else {
-				deltaHp -= _hpDrain * 16;
-				deltaEnergy -= _energyDrain * 4;
-				deltaDeathBy = DeathBy.Starvation;
-			}
+			DeltaWater(ref dHp, ref dEnergy, ref dWater, ref dDeathBy, ref excreteOne);
+			DeltaFood(ref dHp, ref dEnergy, ref dFood, ref dDeathBy, ref excreteTwo);
 
 			if (Mood.Asleep) {
-				deltaEnergy = 0;
-				deltaFood = 0;
-				deltaWater = 0;
+				dEnergy = 0;
+				dFood = 0;
+				dWater = 0;
 			} else {
 				if (excreteOne) {
 					Mood.AffectUrge(Urge.Drink, -1);
@@ -325,16 +277,76 @@ namespace ComplexLifeforms {
 				}
 			}
 
-			World.Reclaim(-deltaFood, -deltaWater);
+			World.Reclaim(-dFood, -dWater);
 
-			_hp += deltaHp;
-			_energy += deltaEnergy;
-			_food += deltaFood;
-			_water += deltaWater;
+			_hp += dHp;
+			_energy += dEnergy;
+			_food += dFood;
+			_water += dWater;
 
-			if (_hp < 0 && _deathBy == DeathBy.None && deltaDeathBy != DeathBy.None) {
-				_deathBy = deltaDeathBy;
+			if (_hp < 0 && _deathBy == DeathBy.None && dDeathBy != DeathBy.None) {
+				_deathBy = dDeathBy;
 				_pendingKill = true;
+			}
+		}
+
+		private void DeltaWater (ref int hp, ref int energy, ref int water,
+				ref DeathBy deathBy, ref bool excrete) {
+			if (_water > Init.Water) {
+				excrete = true;
+				hp -= _hpDrain * 8;
+				energy -= _energyDrain * 8;
+				water -= _waterDrain * 8;
+				deathBy = DeathBy.Overhydration;
+			} else if (_water > _drinkThreshold) {
+				excrete = true;
+				energy -= _energyDrain * 4;
+				water -= _waterDrain * 4;
+			} else if (_water > _waterDrain) {
+				hp -= _hpDrain / 2;
+				energy -= _energyDrain;
+				water -= _waterDrain;
+			} else if (_water > 0) {
+				hp -= _hpDrain * 4;
+				energy -= _energyDrain * 2;
+				water -= _water;
+			} else {
+				hp -= _hpDrain * 16;
+				energy -= _energyDrain * 4;
+
+				if (deathBy == DeathBy.None) {
+					deathBy = DeathBy.Dehydration;
+				}
+			}
+		}
+
+		private void DeltaFood (ref int hp, ref int energy, ref int food,
+				ref DeathBy deathBy, ref bool excrete) {
+			if (_food > Init.Food) {
+				excrete = true;
+				hp -= _hpDrain * 8;
+				energy -= _energyDrain * 8;
+				food -= _foodDrain * 8;
+				deathBy = DeathBy.Overeating;
+			} else if (_food > _eatThreshold) {
+				excrete = true;
+				energy -= _energyDrain * 4;
+				food -= _foodDrain * 4;
+			} else if (_food > _foodDrain) {
+				hp -= _hpDrain / 2;
+				energy -= _energyDrain;
+				food -= _foodDrain;
+			} else if (_food > 0) {
+				hp -= _hpDrain * 4;
+				energy -= _energyDrain * 2;
+				food -= _food;
+			} else {
+				hp -= _hpDrain * 16;
+				energy -= _energyDrain * 4;
+
+				if (deathBy == DeathBy.None) {
+					deathBy = DeathBy.Starvation;
+				}
 			}
 		}
 
