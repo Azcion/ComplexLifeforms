@@ -373,6 +373,22 @@ namespace ComplexLifeforms {
 			int deltaFood = 0;
 			int deltaWater = 0;
 			int cost = _healCost + _age;
+
+			switch (Mood.Mood) {
+				case Enums.Mood.Great:
+					cost -= _healCost;
+					break;
+				case Enums.Mood.Good:
+					cost -= _healCost / 2;
+					break;
+				case Enums.Mood.Bad:
+					cost += _healCost / 2;
+					break;
+				case Enums.Mood.Terrible:
+					cost += _healCost;
+					break;
+			}
+
 			int effectiveness = cost + cost;
 
 			if (_food <= cost) {
