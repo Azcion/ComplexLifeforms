@@ -150,6 +150,7 @@ namespace ComplexLifeforms {
 				Sleep();
 			}
 
+			ClampValues();
 			Mood.Update();
 
 			if (_hp <= 0 || _pendingKill || _deathBy != DeathBy.None) {
@@ -349,7 +350,9 @@ namespace ComplexLifeforms {
 				_deathBy = deltaDeathBy;
 				_pendingKill = true;
 			}
+		}
 
+		private void ClampValues () {
 			if (_energy < 0) {
 				_energy = 0;
 			}
