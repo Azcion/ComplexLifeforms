@@ -135,21 +135,7 @@ namespace ComplexLifeforms {
 
 			ProcessBodilyFunctions();
 			Heal();
-
-			if (Mood.Asleep) {
-				_hp += _hpDrain * 2;
-				_energy += _energyDrain * 8;
-				++_sleepCount;
-
-				if (_energy >= Init.Energy || _hp < _hpDrain * 32) {
-					Mood.Asleep = false;
-				}
-			}
-
-			if (!Mood.Asleep && _energy < _sleepThreshold) {
-				Sleep();
-			}
-
+			ProcessSleep();
 			ClampValues();
 			Mood.Update();
 
@@ -366,21 +352,6 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		private void Sleep () {
-			Mood.Asleep = true;
-
-			if (_energy < 0) {
-				_hp -= _hpDrain * 10;
-				
-				if (_hp < 0 && _deathBy == DeathBy.None) {
-					_deathBy = DeathBy.Exhaustion;
-					_pendingKill = true;
-				}
-			}
-
-			Mood.Action(Urge.Sleep);
-		}
-
 		private void Heal () {
 			if (_hp > _healThreshold || Mood.Asleep) {
 				return;
@@ -431,6 +402,34 @@ namespace ComplexLifeforms {
 			_food += deltaFood;
 			_water += deltaWater;
 			++_healCount;
+		}
+
+		private void ProcessSleep () {
+			if (Mood.Asleep) {
+				_hp += _hpDrain * 2;
+				_energy += _energyDrain * 8;
+				++_sleepCount;
+
+				if (_energy >= Init.Energy || _hp < _hpDrain * 32) {
+					Mood.Asleep = false;
+				}
+
+				return;
+			}
+
+			if (_energy < _sleepThreshold) {
+				Mood.Asleep = true;
+				Mood.Action(Urge.Sleep);
+
+				if (_energy <= 0) {
+					_hp -= _hpDrain * 10;
+
+					if (_hp < 0 && _deathBy == DeathBy.None) {
+						_deathBy = DeathBy.Exhaustion;
+						_pendingKill = true;
+					}
+				}
+			}
 		}
 
 		private void Kill () {
