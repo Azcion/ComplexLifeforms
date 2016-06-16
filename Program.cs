@@ -30,8 +30,8 @@ namespace ComplexLifeforms {
 			Console.WriteLine(World.ToStringHeader('|', true) + "|alive " + $"{seed,54}");
 			Console.Write(WORLD.ToString('|', true) + $"|{LIFEFORMS.Length,6}");
 
-			int cursorColumn = Console.CursorTop;
-			int cursorLine = Console.CursorLeft;
+			int cursorTop = Console.CursorTop;
+			int cursorLeft = Console.CursorLeft;
 			Console.WriteLine("\nProcessing cycles...");
 			
 			int updates = 0;
@@ -74,7 +74,7 @@ namespace ComplexLifeforms {
 				}
 			}
 
-			Console.SetCursorPosition(cursorLine, cursorColumn);
+			Console.SetCursorPosition(cursorLeft, cursorTop);
 			Console.WriteLine($"{updates + " cycles",54}");
 			Console.WriteLine(WORLD.ToString('|', true) + $"|{alive,6}");
 			Console.WriteLine();
@@ -160,6 +160,11 @@ namespace ComplexLifeforms {
 			double[] res = Utils.StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
 
+			int cursorBottom = Console.CursorTop;
+			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
+			Console.WriteLine($"{Environment.TickCount - seed + " ms",54}");
+			Console.SetCursorPosition(0, cursorBottom);
+			
 			// debugging
 			if (!LOGGING) {
 				return;
