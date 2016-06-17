@@ -7,7 +7,8 @@
 		Dehydration,
 		Overeating,
 		Overhydration,
-		Exhaustion
+		Exhaustion,
+		Malnutrition
 
 	}
 

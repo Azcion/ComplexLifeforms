@@ -133,8 +133,8 @@ namespace ComplexLifeforms {
 				++deathByStats[(int) lifeform.DeathBy];
 			}
 
-			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Causes of death",-31}");
-			Console.WriteLine(MoodManager.ToStringHeader('|') + "||none|strv|dhyd|oeat|ohyd|exhs");
+			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Causes of death",-36}");
+			Console.WriteLine(MoodManager.ToStringHeader('|') + "||none|strv|dhyd|oeat|ohyd|exhs|maln");
 
 			foreach (int u in urgeStats) {
 				Console.Write($"{u,4}|");
