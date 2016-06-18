@@ -69,12 +69,7 @@ namespace ComplexLifeforms {
 				}
 			}
 
-			int alive = 0;
-			foreach (Lifeform lifeform in LIFEFORMS) {
-				if (lifeform.Alive) {
-					++alive;
-				}
-			}
+			int alive = LIFEFORMS.Count(lifeform => lifeform.Alive);
 
 			Console.SetCursorPosition(cursorLeft, cursorTop);
 			Console.WriteLine($"{updates + " cycles",54}");

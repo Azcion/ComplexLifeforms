@@ -131,7 +131,10 @@ namespace ComplexLifeforms {
 				return;
 			}
 
-			++_age;
+			if (_pendingKill) {
+				Kill();
+				return;
+			}
 
 			ProcessBodilyFunctions();
 			Heal();
@@ -139,7 +142,13 @@ namespace ComplexLifeforms {
 			ClampValues();
 			Mood.Update();
 
-			if (_hp <= 0 || _pendingKill || _deathBy != DeathBy.None) {
+			++_age;
+
+			if (_hp <= 0 || _deathBy != DeathBy.None || _pendingKill) {
+				if (_deathBy != DeathBy.None && !_pendingKill) {
+					Console.WriteLine("problem");
+					Console.ReadLine();
+				}
 				Kill();
 			}
 		}
@@ -249,6 +258,21 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
+		private static DeathBy DeltaDeathBy (DeathBy causeW, DeathBy causeF) {
+			DeathBy cause;
+
+			if (causeW == DeathBy.None) {
+				cause = causeF;
+			} else {
+				if (causeF == DeathBy.None)
+					cause = causeW;
+				else
+					cause = DeathBy.Malnutrition;
+			}
+
+			return cause;
+		}
+
 		private void ProcessBodilyFunctions () {
 			bool excreteW = false;
 			bool excreteF = false;
@@ -286,9 +310,7 @@ namespace ComplexLifeforms {
 			_food += dFood;
 			_water += dWater;
 
-			bool didDie = !(causeW == DeathBy.None && causeF == DeathBy.None);
-
-			if (_hp <= 0 && _deathBy == DeathBy.None && didDie) {
+			if (_hp < 0 && _deathBy == DeathBy.None) {
 				_deathBy = DeltaDeathBy(causeW, causeF);
 				_pendingKill = true;
 			}
@@ -307,13 +329,13 @@ namespace ComplexLifeforms {
 				energy -= _energyDrain * 4;
 				water -= _waterDrain * 4;
 			} else if (_water > _waterDrain) {
-				hp -= _hpDrain / 2;
 				energy -= _energyDrain;
 				water -= _waterDrain;
 			} else if (_water > 0) {
 				hp -= _hpDrain * 4;
 				energy -= _energyDrain * 2;
 				water -= _water;
+				cause = DeathBy.Dehydration;
 			} else {
 				hp -= _hpDrain * 16;
 				energy -= _energyDrain * 4;
@@ -337,13 +359,13 @@ namespace ComplexLifeforms {
 				energy -= _energyDrain * 4;
 				food -= _foodDrain * 4;
 			} else if (_food > _foodDrain) {
-				hp -= _hpDrain / 2;
 				energy -= _energyDrain;
 				food -= _foodDrain;
 			} else if (_food > 0) {
 				hp -= _hpDrain * 4;
 				energy -= _energyDrain * 2;
 				food -= _food;
+				cause = DeathBy.Starvation;
 			} else {
 				hp -= _hpDrain * 16;
 				energy -= _energyDrain * 4;
@@ -352,21 +374,6 @@ namespace ComplexLifeforms {
 					cause = DeathBy.Starvation;
 				}
 			}
-		}
-
-		private DeathBy DeltaDeathBy (DeathBy causeW, DeathBy causeF) {
-			DeathBy cause;
-
-			if (causeW == DeathBy.None) {
-				cause = causeF;
-			} else {
-				if (causeF == DeathBy.None)
-					cause = causeW;
-				else
-					cause = DeathBy.Malnutrition;
-			}
-
-			return cause;
 		}
 
 		private void ClampValues () {
@@ -384,7 +391,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Heal () {
-			if (_hp > _healThreshold || Mood.Asleep) {
+			if (_hp > _healThreshold || Mood.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -452,6 +459,10 @@ namespace ComplexLifeforms {
 		}
 
 		private void ProcessSleep () {
+			if (_pendingKill) {
+				return;
+			}
+
 			if (Mood.Asleep) {
 				_hp += _hpDrain * 2;
 				_energy += _energyDrain * 8;
@@ -480,10 +491,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Kill () {
-			if (_pendingKill) {
-				_pendingKill = false;
-			}
-
+			_pendingKill = false;
 			_alive = false;
 
 			if (_deathBy == DeathBy.None) {
