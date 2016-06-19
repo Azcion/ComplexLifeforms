@@ -41,26 +41,26 @@ namespace ComplexLifeforms {
 				int deadCount = 0;
 
 				for (int j = 0; j < LIFEFORMS.Length; ++j) {
-					Lifeform c = LIFEFORMS[j];
+					Lifeform lifeform = LIFEFORMS[j];
 
-					if (!c.Alive) {
+					if (!lifeform.Alive) {
 						++deadCount;
 						continue;
 					}
 
 					if (_random.Next(10) == 0) {
-						c.Eat(_random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
+						lifeform.Eat(_random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
 					}
 
 					if (_random.Next(5) == 0) {
-						c.Drink(_random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
+						lifeform.Drink(_random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
 					}
 
-					c.Update();
+					lifeform.Update();
 					++updates;
 
 					if (LOGGING) {
-						LOG[j][i] = c.ToString(extended: true);
+						LOG[j][i] = lifeform.ToString(extended: true);
 					}
 				}
 
@@ -189,6 +189,63 @@ namespace ComplexLifeforms {
 
 				break;
 			}
+		}
+
+		private static void RunSeeds () {
+			int line = Console.CursorTop + 1;
+
+			for (int seed = 0; seed < 500; ++seed) {
+				Console.SetCursorPosition(0, 0);
+				Console.WriteLine($"Processing seed {seed}...");
+				Console.SetCursorPosition(0, line);
+
+				if (Run(seed)) {
+					++line;
+				}
+			}
+		}
+
+		private static bool Run (int seed) {
+			World world = new World(5000000);
+			Random random = new Random(seed);
+
+			for (int i = 0; i < LIFEFORMS.Length; ++i) {
+				LIFEFORMS[i] = new Lifeform(world, random);
+			}
+
+			for (int i = 0; i < CYCLES; ++i) {
+				int deadCount = 0;
+
+				foreach (Lifeform c in LIFEFORMS) {
+					if (!c.Alive) {
+						++deadCount;
+						continue;
+					}
+
+					if (random.Next(10) == 0) {
+						c.Eat(random.Next(10, 20) * world.Init.FoodDrain * 3);
+					}
+
+					if (random.Next(5) == 0) {
+						c.Drink(random.Next(2, 10) * world.Init.WaterDrain * 3);
+					}
+
+					c.Update();
+				}
+
+				if (deadCount == LIFEFORMS.Length) {
+					break;
+				}
+			}
+
+			int nones = LIFEFORMS.Count(lifeform => lifeform.DeathBy == DeathBy.None);
+
+			if (nones > 0) {
+				Console.WriteLine($"nones: {nones,5} seed: {seed}");
+				return true;
+			}
+
+			return false;
 		}
 
 	}
