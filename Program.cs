@@ -118,26 +118,33 @@ namespace ComplexLifeforms {
 			// statistics
 			int[] urgeStats = new int[MoodManager.URGE_COUNT];
 			int[] emotionStats = new int[MoodManager.EMOTION_COUNT];
+			int[] moodStats = new int[Enum.GetNames(typeof(Mood)).Length];
 			int[] deathByStats = new int[Enum.GetNames(typeof(DeathBy)).Length];
 
 			foreach (Lifeform lifeform in lifeforms) {
 				++urgeStats[(int) lifeform.Mood.Urge];
 				++emotionStats[(int) lifeform.Mood.Emotion];
+				++moodStats[(int) lifeform.Mood.Mood];
 				++deathByStats[(int) lifeform.DeathBy];
 			}
 
 			MoodManager.Extended = false;
-			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Causes of death",-36}");
-			Console.WriteLine(MoodManager.ToStringHeader() + "||none|strv|dhyd|oeat|ohyd|exhs|maln");
+			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
+			Console.WriteLine(MoodManager.ToStringHeader());
 
 			foreach (int u in urgeStats) {
 				Console.Write($"{u,4}|");
 			}
-			
-			Console.Write('|');
 
 			foreach (int e in emotionStats) {
-				Console.Write($"{e,4}|");
+				Console.Write($"|{e,4}");
+			}
+
+			Console.WriteLine($"\n\n{"Moods",-24}||{"Causes of death",-36}");
+			Console.WriteLine($"grea|good|neut|bad |terr||none|strv|dhyd|oeat|ohyd|exhs|maln");
+
+			foreach (int m in moodStats) {
+				Console.Write($"{m,4}|");
 			}
 
 			foreach (int d in deathByStats) {
