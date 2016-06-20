@@ -391,11 +391,10 @@ namespace ComplexLifeforms {
 		}
 
 		private void ProcessMood () {
-			const int optimal = 30;
-			const int good = optimal / 4;
-			const int neutral = 0;
-			const int bad = -good;
-			const int terrible = -optimal;
+			const int good = 15;
+			const int neutral = 5;
+			const int bad = -5;
+			const int terrible = -15;
 
 			int mood = _moodValue / 2;
 
