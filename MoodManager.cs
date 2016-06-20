@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Policy;
+using System.Windows.Forms.VisualStyles;
 using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
@@ -14,6 +16,9 @@ namespace ComplexLifeforms {
 		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
 		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
+
+		public static char Separator = ' ';
+		public static bool Extended = false;
 
 		/// <summary>Represents the lifeform which this object belongs to.</summary>
 		[SuppressMessage ("ReSharper", "NotAccessedField.Global")]
@@ -101,8 +106,8 @@ namespace ComplexLifeforms {
 			return EMOTION_NAMES[result[0], result[1]];
 		}
 
-		public static string ToStringHeader (char separator=' ', bool mood=false) {
-			char s = separator;
+		public static string ToStringHeader () {
+			char s = Separator;
 			string data = "";
 
 			bool first = true;
@@ -121,7 +126,7 @@ namespace ComplexLifeforms {
 				data += $"{s}{Utils.Truncate(emotion, 4),-4}";
 			}
 
-			if (mood) {
+			if (Extended) {
 				data += $"{s}{s}mood";
 			}
 
@@ -252,8 +257,8 @@ namespace ComplexLifeforms {
 			_urgeValues[(int) urge] += delta;
 		}
 
-		public string ToString (char separator=' ', bool mood=false) {
-			char s = separator;
+		public override string ToString () {
+			char s = Separator;
 			string data = $"{_urgeValues[0],2} {(int) _urgeBias[0]}";
 
 			for (int i = 1; i < URGE_COUNT; ++i) {
@@ -265,7 +270,7 @@ namespace ComplexLifeforms {
 				data += $"{s}{_emotionValues[i],2} {(int) _emotionBias[i]}";
 			}
 
-			if (mood) {
+			if (Extended) {
 				data += $"{s}{s}{_moodValue,4}";
 			}
 

@@ -23,6 +23,8 @@ namespace ComplexLifeforms {
 			Lifeform.Separator = '|';
 			Lifeform.Extended = true;
 			Lifeform.Logging = false;
+			MoodManager.Separator = '|';
+			MoodManager.Extended = true;
 
 			int seed = Environment.TickCount;
 			_random = new Random(seed);
@@ -32,7 +34,7 @@ namespace ComplexLifeforms {
 			}
 
 			Console.WriteLine(World.ToStringHeader() + "|alive " + $"{seed,54}");
-			Console.Write(WORLD.ToString() + $"|{LIFEFORMS.Count,6}");
+			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}");
 
 			int cursorTop = Console.CursorTop;
 			int cursorLeft = Console.CursorLeft;
@@ -69,7 +71,7 @@ namespace ComplexLifeforms {
 
 			Console.SetCursorPosition(cursorLeft, cursorTop);
 			Console.WriteLine($"{updates + " cycles",54}");
-			Console.WriteLine(WORLD.ToString() + $"|{alive,6}");
+			Console.WriteLine(WORLD + $"|{alive,6}");
 			Console.WriteLine();
 
 			Lifeform[] lifeforms = LIFEFORMS.OrderByDescending(c => c.Age).ToArray();
@@ -82,10 +84,10 @@ namespace ComplexLifeforms {
 				}
 
 				Console.WriteLine();
-				Console.WriteLine(MoodManager.ToStringHeader('|'));
+				Console.WriteLine(MoodManager.ToStringHeader());
 
 				foreach (Lifeform lifeform in lifeforms) {
-					Console.WriteLine(lifeform.Mood.ToString('|'));
+					Console.WriteLine(lifeform.Mood.ToString());
 				}
 
 				return;
@@ -103,14 +105,14 @@ namespace ComplexLifeforms {
 			}
 
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
-			Console.WriteLine(MoodManager.ToStringHeader('|', true));
+			Console.WriteLine(MoodManager.ToStringHeader());
 
 			for (int i = 0; i < 4; ++i) {
-				Console.WriteLine(lifeforms[i].Mood.ToString('|', true));
+				Console.WriteLine(lifeforms[i].Mood.ToString());
 			}
 
 			for (int i = 5; i > 1; --i) {
-				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString('|', true));
+				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString());
 			}
 
 			// statistics
@@ -124,8 +126,9 @@ namespace ComplexLifeforms {
 				++deathByStats[(int) lifeform.DeathBy];
 			}
 
+			MoodManager.Extended = false;
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Causes of death",-36}");
-			Console.WriteLine(MoodManager.ToStringHeader('|') + "||none|strv|dhyd|oeat|ohyd|exhs|maln");
+			Console.WriteLine(MoodManager.ToStringHeader() + "||none|strv|dhyd|oeat|ohyd|exhs|maln");
 
 			foreach (int u in urgeStats) {
 				Console.Write($"{u,4}|");
