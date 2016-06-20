@@ -229,24 +229,25 @@ namespace ComplexLifeforms {
 				Console.WriteLine($"Processing seed {seed}...");
 				Console.SetCursorPosition(0, line);
 
-				if (Run(seed)) {
+				if (FindNones(seed)) {
 					++line;
 				}
 			}
 		}
 
-		private static bool Run (int seed) {
+		private static bool FindNones (int seed) {
 			World world = new World(5000000);
+			HashSet<Lifeform> lifeforms = new HashSet<Lifeform>();
 			Random random = new Random(seed);
 
-			for (int i = 0; i < LIFEFORMS.Count; ++i) {
-				LIFEFORMS.Add(new Lifeform(world, random));
+			for (int i = 0; i < lifeforms.Count; ++i) {
+				lifeforms.Add(new Lifeform(world, random));
 			}
 
 			for (int i = 0; i < CYCLES; ++i) {
 				int deadCount = 0;
 
-				foreach (Lifeform lifeform in LIFEFORMS) {
+				foreach (Lifeform lifeform in lifeforms) {
 					if (!lifeform.Alive) {
 						++deadCount;
 						continue;
@@ -263,12 +264,12 @@ namespace ComplexLifeforms {
 					lifeform.Update();
 				}
 
-				if (deadCount == LIFEFORMS.Count) {
+				if (deadCount == lifeforms.Count) {
 					break;
 				}
 			}
 
-			int nones = LIFEFORMS.Count(lifeform => lifeform.DeathBy == DeathBy.None);
+			int nones = lifeforms.Count(lifeform => lifeform.DeathBy == DeathBy.None);
 
 			if (nones <= 0) {
 				return false;
