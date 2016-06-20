@@ -10,11 +10,15 @@ namespace ComplexLifeforms {
 	public class Lifeform {
 
 		public static char Separator = ' ';
+		public static int TruncateTo = 0;
 		public static bool Extended = false;
 		public static bool Logging = false;
 
 		/// <summary>Unique ID assigned to this object.</summary>
 		public readonly int Id;
+
+		public readonly int ParentIdA;
+		public readonly int ParentIdB;
 
 		/// <summary>Log of ToString for every update.</summary>
 		public readonly HashSet<string> Log;
@@ -57,6 +61,7 @@ namespace ComplexLifeforms {
 		private int _sleepCount;
 		private int _eatCount;
 		private int _drinkCount;
+		private int _breedCount;
 
 		/// <summary>
 		/// Unpacks SInitLifeform and uses its values.
@@ -73,6 +78,17 @@ namespace ComplexLifeforms {
 						init.EatThreshold, init.DrinkThreshold) {
 		}
 
+		/// <summary>
+		/// Constructor for making a new child based on two parents.
+		/// </summary>
+		public Lifeform (World world, InitLifeform init, MoodManager mood, int parentIdA, int parentIdB)
+				: this(world, init) {
+			ParentIdA = parentIdA;
+			ParentIdB = parentIdB;
+			Mood = mood;
+		}
+
+		public Lifeform (World world,
 				double hpScale=1, double energyScale=1,
 				double foodScale=1, double waterScale=1,
 				double healCostScale=1, double healAmountScale=1,
@@ -81,6 +97,8 @@ namespace ComplexLifeforms {
 				double healThreshold=0.5, double sleepThreshold=0.25,
 				double eatThreshold=0.5, double drinkThreshold=0.5) {
 			Id = _id++;
+			ParentIdA = -1;
+			ParentIdB = -1;
 			Log = new HashSet<string>();
 			World = world;
 			Mood = new MoodManager(this);
@@ -121,6 +139,39 @@ namespace ComplexLifeforms {
 		public int Age => _age;
 		public bool Alive => _alive;
 		public DeathBy DeathBy => _deathBy;
+		public int BreedCount => _breedCount;
+
+		public static Lifeform Breed (Lifeform parentA, Lifeform parentB) {
+			if (!IsQualified(parentA) || !IsQualified(parentB)) {
+				return null;
+			}
+
+			int[] dna = MixDNA();
+
+			Tier[] urgeBias = new Tier[URGE_COUNT];
+			Tier[] emotionBias = new Tier[EMOTION_COUNT];
+
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				Lifeform parent = dna[i] == 0 ? parentA : parentB;
+				urgeBias[i] = parent.Mood.UrgeBias[i];
+			}
+
+			for (int i = 0; i < EMOTION_COUNT; ++i) {
+				Lifeform parent = dna[i + URGE_COUNT] == 0 ? parentA : parentB;
+				emotionBias[i] = parent.Mood.EmotionBias[i];
+			}
+
+			MoodManager mood = new MoodManager(urgeBias, emotionBias);
+			Lifeform child = new Lifeform(parentA.World, parentA.Init, mood, parentA.Id, parentB.Id) {
+				_food = parentA._foodDrain + parentB._foodDrain,
+				_water = parentA._waterDrain + parentB._waterDrain
+			};
+
+			BreedAction(parentA);
+			BreedAction(parentB);
+
+			return child;
+		}
 
 		public static string ToStringHeader () {
 			char s = Separator;
@@ -130,8 +181,20 @@ namespace ComplexLifeforms {
 				return data;
 			}
 
-			data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
-					+ $"{s}{"mood",-8}{s}{"death by",-13}{s}asleep";
+			if (TruncateTo == 0) {
+				data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
+						+ $"{s}{"mood",-8}{s}{"death by",-13}{s}sleeping";
+			} else {
+				data += $"{s}heals{s}slept{s}eaten{s}drank{s}bred ";
+
+				string[] elements = {
+					"urge", "emotion", "mood", "death by", "sleeping"
+				};
+
+				foreach (string element in elements) {
+					data += s + Truncate(element, TruncateTo, true);
+				}
+			}
 
 			return data;
 		}
@@ -265,11 +328,40 @@ namespace ComplexLifeforms {
 				return data;
 			}
 
-			data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
-					+ $"{s}{Mood.Urge,-9}{s}{MoodManager.EmotionName(Mood),-12}{s}{Mood.Mood,-8}"
-					+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
+			if (TruncateTo == 0) {
+				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
+						+ $"{s}{Mood.Urge,-9}{s}{MoodManager.EmotionName(Mood),-12}{s}{Mood.Mood,-8}"
+						+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
+			} else {
+				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}{s}{_breedCount,5}";
+
+				object[] elements = {
+						Mood.Urge, MoodManager.EmotionName(Mood), Mood.Mood, _deathBy, Mood.Asleep ? "yes" : "no"
+				};
+
+				foreach (object element in elements) {
+					data += s + Truncate(element.ToString(), TruncateTo, true);
+				}
+			}
 
 			return data;
+		}
+
+		private static bool IsQualified (Lifeform parent) {
+			bool unqualified = parent._hp < parent.Init.HealThreshold
+					|| parent._food < parent._foodDrain
+					|| parent._water < parent._waterDrain;
+
+			return !unqualified;
+		}
+
+		private static void BreedAction (Lifeform parent) {
+			parent._hp /= 2;
+			parent._energy /= 2;
+			parent._food -= parent._foodDrain;
+			parent._water -= parent._waterDrain;
+			parent._breedCount++;
+			parent.Mood.Action(Urge.Reproduce);
 		}
 
 		private static DeathBy DeltaDeathBy (DeathBy causeW, DeathBy causeF) {

@@ -94,6 +94,9 @@ namespace ComplexLifeforms {
 		/// <summary>Represents the current strongest emotion.</summary>
 		public Emotion Emotion => _emotion;
 
+		public Tier[] UrgeBias => _urgeBias;
+		public Tier[] EmotionBias => _emotionBias;
+
 		public static string EmotionName (MoodManager mood) {
 			int[] result = EmotionIntensity(mood._emotionValues);
 			return EMOTION_NAMES[result[0], result[1]];

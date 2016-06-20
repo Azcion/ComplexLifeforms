@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using ComplexLifeforms.Enums;
 
@@ -33,16 +34,11 @@ namespace ComplexLifeforms {
 			return res;
 		}
 
-		public static string Truncate (string value, int length) {
-			if (string.IsNullOrEmpty(value)) {
-				return value;
-			}
+		public static string Truncate (string value, int length, bool whitespace=false) {
+			int outLength = Math.Min(value.Length, length);
+			string result = value.Substring(0, outLength);
 
-			if (value.Length <= length) {
-				return value;
-			}
-
-			return value.Substring(0, length);
+			return !whitespace ? result : result.PadRight(length);
 		}
 
 		public static int MaxIndex (IEnumerable<int> array) {
@@ -126,6 +122,29 @@ namespace ComplexLifeforms {
 			}
 
 			return csv;
+		}
+
+		public static int[] MixDNA () {
+			int count = URGE_COUNT + EMOTION_COUNT;
+			int threshold = 1 + count / 2 + Random.Next(-3, 4);
+
+			int[] dnaA = CreateDNA(0, count);
+			int[] dnaB = CreateDNA(1, count);
+			IList<int> dnaC = new List<int>();
+
+			for (int i = 0; i < threshold; ++i) {
+				dnaC.Add(dnaA[i]);
+			}
+
+			for (int i = threshold; i < count; ++i) {
+				dnaC.Add(dnaB[i]);
+			}
+
+			return dnaC.ToArray();
+		}
+
+		public static int[] CreateDNA (int identifier, int count) {
+			return Enumerable.Repeat(identifier, count).ToArray();
 		}
 
 	}

@@ -13,16 +13,16 @@ namespace ComplexLifeforms {
 
 		private static readonly World WORLD = new World(5000000);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
+		private static readonly HashSet<Lifeform> BROTHEL = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> LIMBO = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> GRAVEYARD = new HashSet<Lifeform>();
-
-		private static Random _random;
 
 		private static void Main () {
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
 			World.Separator = '|';
 			World.Extended = true;
 			Lifeform.Separator = '|';
+			Lifeform.TruncateTo = 5;
 			Lifeform.Extended = true;
 			Lifeform.Logging = false;
 			MoodManager.Separator = '|';
@@ -35,14 +35,17 @@ namespace ComplexLifeforms {
 				LIFEFORMS.Add(new Lifeform(WORLD));
 			}
 
-			Console.WriteLine(World.ToStringHeader() + "|alive " + $"{seed,54}");
-			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}");
+			Console.WriteLine(World.ToStringHeader() + "|alive |max   " + $"{seed,47}");
+			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|     0");
 
 			int cursorTop = Console.CursorTop;
 			int cursorLeft = Console.CursorLeft;
 			Console.WriteLine("\nProcessing cycles...");
-			
+
+			int cycles = CYCLES;
 			int updates = 0;
+			int maxLifeforms = 0;
+
 			for (int i = 0; i < CYCLES; ++i) {
 				foreach (Lifeform lifeform in LIFEFORMS) {
 					if (!lifeform.Alive) {
@@ -50,6 +53,9 @@ namespace ComplexLifeforms {
 						continue;
 					}
 
+					if (lifeform.Mood.Mood == Mood.Great && lifeform.Mood.Urge == Urge.Reproduce) {
+						BROTHEL.Add(lifeform);
+					} else {
 						if (Utils.Random.Next(10) == 0) {
 							lifeform.Eat(Utils.Random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
 						}
@@ -70,31 +76,55 @@ namespace ComplexLifeforms {
 
 				LIMBO.Clear();
 
+				Lifeform parentA = null;
+
+				foreach (Lifeform lifeform in BROTHEL) {
+					if (parentA == null) {
+						parentA = lifeform;
+						continue;
+					}
+
+					Lifeform child = Lifeform.Breed(parentA, lifeform);
+					parentA = null;
+
+					if (child != null) {
+						LIFEFORMS.Add(child);
+					}
+				}
+
+				BROTHEL.Clear();
+
 				if (LIFEFORMS.Count == 0) {
+					cycles = i;
 					break;
+				}
+
+				if (LIFEFORMS.Count > maxLifeforms) {
+					maxLifeforms = LIFEFORMS.Count;
 				}
 			}
 
-			int alive = LIFEFORMS.Count(lifeform => lifeform.Alive);
-
 			Console.SetCursorPosition(cursorLeft, cursorTop);
-			Console.WriteLine($"{updates + " cycles",54}");
-			Console.WriteLine(WORLD + $"|{alive,6}");
+			Console.WriteLine($"{cycles + " cycles, " + updates + " updates",47}");
+			Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
 			Console.WriteLine();
 
-			OldestAndYoungest(4, 2, false);
+			TopAndBottom(4, 0, false);
 			Statistics(true);
 
 			int cursorBottom = Console.CursorTop;
 			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
-			Console.WriteLine($"{Environment.TickCount - seed + " ms",54}");
+			Console.WriteLine($"{Environment.TickCount - seed + " ms",47}");
 			Console.SetCursorPosition(0, cursorBottom);
 			
 			FindErrors();
 		}
 
-		private static void OldestAndYoungest (int oldest, int youngest, bool data) {
-			Lifeform[] lifeforms = GRAVEYARD.OrderByDescending(c => c.Age).ToArray();
+		private static void TopAndBottom (int oldest, int youngest, bool data) {
+			Lifeform[] lifeforms = GRAVEYARD
+					.OrderByDescending(c => c.BreedCount)
+					.ThenByDescending(c => c.Age)
+					.ToArray();
 
 			if (lifeforms.Length < oldest + youngest) {
 				Console.WriteLine(Lifeform.ToStringHeader());
