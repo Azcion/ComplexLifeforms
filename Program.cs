@@ -13,6 +13,8 @@ namespace ComplexLifeforms {
 
 		private static readonly World WORLD = new World(5000000);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
+		private static readonly HashSet<Lifeform> LIMBO = new HashSet<Lifeform>();
+		private static readonly HashSet<Lifeform> GRAVEYARD = new HashSet<Lifeform>();
 
 		private static Random _random;
 
@@ -42,11 +44,9 @@ namespace ComplexLifeforms {
 			
 			int updates = 0;
 			for (int i = 0; i < CYCLES; ++i) {
-				int deadCount = 0;
-
 				foreach (Lifeform lifeform in LIFEFORMS) {
 					if (!lifeform.Alive) {
-						++deadCount;
+						LIMBO.Add(lifeform);
 						continue;
 					}
 
@@ -62,7 +62,14 @@ namespace ComplexLifeforms {
 					++updates;
 				}
 
-				if (deadCount == LIFEFORMS.Count) {
+				foreach (Lifeform lifeform in LIMBO) {
+					GRAVEYARD.Add(lifeform);
+					LIFEFORMS.Remove(lifeform);
+				}
+
+				LIMBO.Clear();
+
+				if (LIFEFORMS.Count == 0) {
 					break;
 				}
 			}
@@ -86,7 +93,7 @@ namespace ComplexLifeforms {
 		}
 
 		private static void OldestAndYoungest (int oldest, int youngest, bool data) {
-			Lifeform[] lifeforms = LIFEFORMS.OrderByDescending(c => c.Age).ToArray();
+			Lifeform[] lifeforms = GRAVEYARD.OrderByDescending(c => c.Age).ToArray();
 
 			if (lifeforms.Length < oldest + youngest) {
 				Console.WriteLine(Lifeform.ToStringHeader());
@@ -141,7 +148,7 @@ namespace ComplexLifeforms {
 			int[] moodStats = new int[Enum.GetNames(typeof(Mood)).Length];
 			int[] deathByStats = new int[Enum.GetNames(typeof(DeathBy)).Length];
 
-			foreach (Lifeform lifeform in LIFEFORMS) {
+			foreach (Lifeform lifeform in GRAVEYARD) {
 				++urgeStats[(int) lifeform.Mood.Urge];
 				++emotionStats[(int) lifeform.Mood.Emotion];
 				++moodStats[(int) lifeform.Mood.Mood];
@@ -206,7 +213,7 @@ namespace ComplexLifeforms {
 
 			Console.WriteLine();
 
-			foreach (Lifeform lifeform in LIFEFORMS) {
+			foreach (Lifeform lifeform in GRAVEYARD) {
 				if (!lifeform.Alive && lifeform.DeathBy != DeathBy.None) {
 					continue;
 				}
