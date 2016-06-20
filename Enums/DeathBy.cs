@@ -5,8 +5,8 @@
 		None,
 		Starvation,
 		Dehydration,
-		Overeating,
-		Overhydration,
+		Gluttony,
+		Overdrinking,
 		Exhaustion,
 		Malnutrition
 

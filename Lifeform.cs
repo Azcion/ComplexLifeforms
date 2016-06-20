@@ -212,7 +212,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (_hp <= 0 && _deathBy == DeathBy.None) {
-				_deathBy = DeathBy.Overeating;
+				_deathBy = DeathBy.Gluttony;
 				_pendingKill = true;
 			}
 		}
@@ -252,7 +252,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (_hp <= 0 && _deathBy == DeathBy.None) {
-				_deathBy = DeathBy.Overhydration;
+				_deathBy = DeathBy.Overdrinking;
 				_pendingKill = true;
 			}
 		}
@@ -337,7 +337,7 @@ namespace ComplexLifeforms {
 				hp -= _hpDrain * 8;
 				energy -= _energyDrain * 8;
 				water -= _waterDrain * 8;
-				cause = DeathBy.Overhydration;
+				cause = DeathBy.Overdrinking;
 			} else if (_water > _drinkThreshold) {
 				excrete = true;
 				energy -= _energyDrain * 4;
@@ -367,7 +367,7 @@ namespace ComplexLifeforms {
 				hp -= _hpDrain * 8;
 				energy -= _energyDrain * 8;
 				food -= _foodDrain * 8;
-				cause = DeathBy.Overeating;
+				cause = DeathBy.Gluttony;
 			} else if (_food > _eatThreshold) {
 				excrete = true;
 				energy -= _energyDrain * 4;

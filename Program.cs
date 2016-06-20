@@ -170,8 +170,12 @@ namespace ComplexLifeforms {
 				Console.Write($"|{m,4}");
 			}
 
+			data = Enum.GetNames(typeof(DeathBy)).Aggregate(
+					(current, cause) => current + $"|{Utils.Truncate(cause, 4),-4}"
+			);
+
 			Console.WriteLine($"\n\n{"Causes of death",-36}");
-			Console.WriteLine("none|strv|dhyd|oeat|ohyd|exhs|maln");
+			Console.WriteLine(data);
 
 			Console.Write($"{deathByStats[0],4}");
 			for (int i = 1; i < deathByStats.Length; ++i) {
