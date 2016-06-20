@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ComplexLifeforms.Enums;
 
@@ -221,6 +222,7 @@ namespace ComplexLifeforms {
 			}
 		}
 
+		[SuppressMessage ("ReSharper", "UnusedMember.Local")]
 		private static void RunSeeds () {
 			int line = Console.CursorTop + 1;
 
