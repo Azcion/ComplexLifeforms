@@ -9,7 +9,6 @@ namespace ComplexLifeforms {
 
 		private const int COUNT = 10000;
 		private const int CYCLES = 1000;
-		private const bool LOGGING = false;
 
 		private static readonly World WORLD = new World(5000000);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
@@ -21,16 +20,13 @@ namespace ComplexLifeforms {
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
 			Lifeform.Separator = '|';
 			Lifeform.Extended = true;
+			Lifeform.Logging = false;
 
 			int seed = Environment.TickCount;
 			_random = new Random(seed);
 
 			for (int i = 0; i < COUNT; ++i) {
 				LIFEFORMS.Add(new Lifeform(WORLD, _random));
-
-				if (LOGGING) {
-					LOG[i] = new string[CYCLES];
-				}
 			}
 
 			Console.WriteLine(World.ToStringHeader('|', true) + "|alive " + $"{seed,54}");
@@ -60,10 +56,6 @@ namespace ComplexLifeforms {
 
 					lifeform.Update();
 					++updates;
-
-					if (LOGGING) {
-						LOG[lifeform.Id][i] = lifeform.ToString(extended: true);
-					}
 				}
 
 				if (deadCount == LIFEFORMS.Count) {
@@ -165,7 +157,7 @@ namespace ComplexLifeforms {
 			Console.SetCursorPosition(0, cursorBottom);
 			
 			// debugging
-			if (!LOGGING) {
+			if (!Lifeform.Logging) {
 				return;
 			}
 

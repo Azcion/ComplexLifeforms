@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using ComplexLifeforms.Enums;
 
@@ -9,10 +10,13 @@ namespace ComplexLifeforms {
 
 		public static char Separator = ' ';
 		public static bool Extended = false;
+		public static bool Logging = false;
 
 		/// <summary>Unique ID assigned to this object.</summary>
-		[SuppressMessage ("ReSharper", "NotAccessedField.Global")]
 		public readonly int Id;
+
+		/// <summary>Log of ToString for every update.</summary>
+		public readonly HashSet<string> Log;
 
 		/// <summary>Constructor parameters.</summary>
 		public readonly InitLifeform Init;
@@ -77,6 +81,7 @@ namespace ComplexLifeforms {
 				double healThreshold=0.5, double sleepThreshold=0.25,
 				double eatThreshold=0.5, double drinkThreshold=0.5) {
 			Id = _id++;
+			Log = new HashSet<string>();
 			World = world;
 			Mood = new MoodManager(this, random);
 			_alive = true;
@@ -155,6 +160,10 @@ namespace ComplexLifeforms {
 					Console.ReadLine();
 				}
 				Kill();
+			}
+
+			if (Logging) {
+				Log.Add(ToString());
 			}
 		}
 
