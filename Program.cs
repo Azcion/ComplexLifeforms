@@ -12,7 +12,6 @@ namespace ComplexLifeforms {
 
 		private static readonly World WORLD = new World(5000000);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
-		private static readonly string[][] LOG = new string[COUNT][];
 
 		private static Random _random;
 
@@ -74,13 +73,29 @@ namespace ComplexLifeforms {
 			Console.WriteLine(WORLD + $"|{alive,6}");
 			Console.WriteLine();
 
+			OldestAndYoungest(4, 2, false);
+			Statistics(true);
+
+			int cursorBottom = Console.CursorTop;
+			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
+			Console.WriteLine($"{Environment.TickCount - seed + " ms",54}");
+			Console.SetCursorPosition(0, cursorBottom);
+			
+			FindErrors();
+		}
+
+		private static void OldestAndYoungest (int oldest, int youngest, bool data) {
 			Lifeform[] lifeforms = LIFEFORMS.OrderByDescending(c => c.Age).ToArray();
 
-			if (lifeforms.Length < 8) {
+			if (lifeforms.Length < oldest + youngest) {
 				Console.WriteLine(Lifeform.ToStringHeader());
 
 				foreach (Lifeform lifeform in lifeforms) {
 					Console.WriteLine(lifeform.ToString());
+				}
+
+				if (!data) {
+					return;
 				}
 
 				Console.WriteLine();
@@ -93,44 +108,52 @@ namespace ComplexLifeforms {
 				return;
 			}
 
-			// oldest and youngest four
 			Console.WriteLine(Lifeform.ToStringHeader());
 
-			for (int i = 0; i < 4; ++i) {
+			for (int i = 0; i < oldest; ++i) {
 				Console.WriteLine(lifeforms[i].ToString());
 			}
 
-			for (int i = 5; i > 1; --i) {
+			for (int i = youngest + 1; i > 1; --i) {
 				Console.WriteLine(lifeforms[lifeforms.Length - i].ToString());
+			}
+
+			if (!data) {
+				return;
 			}
 
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
 			Console.WriteLine(MoodManager.ToStringHeader());
 
-			for (int i = 0; i < 4; ++i) {
+			for (int i = 0; i < oldest; ++i) {
 				Console.WriteLine(lifeforms[i].Mood.ToString());
 			}
 
-			for (int i = 5; i > 1; --i) {
+			for (int i = youngest + 1; i > 1; --i) {
 				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString());
 			}
+		}
 
-			// statistics
+		private static void Statistics (bool sdev) {
 			int[] urgeStats = new int[MoodManager.URGE_COUNT];
 			int[] emotionStats = new int[MoodManager.EMOTION_COUNT];
 			int[] moodStats = new int[Enum.GetNames(typeof(Mood)).Length];
 			int[] deathByStats = new int[Enum.GetNames(typeof(DeathBy)).Length];
 
-			foreach (Lifeform lifeform in lifeforms) {
+			foreach (Lifeform lifeform in LIFEFORMS) {
 				++urgeStats[(int) lifeform.Mood.Urge];
 				++emotionStats[(int) lifeform.Mood.Emotion];
 				++moodStats[(int) lifeform.Mood.Mood];
 				++deathByStats[(int) lifeform.DeathBy];
 			}
 
+			string data = Enum.GetNames(typeof(Mood)).Aggregate(
+					"|", (current, mood) => current + $"|{Utils.Truncate(mood, 4),-4}"
+			);
+
 			MoodManager.Extended = false;
-			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
-			Console.WriteLine(MoodManager.ToStringHeader());
+			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}||{"Moods",-24}");
+			Console.WriteLine(MoodManager.ToStringHeader() + data);
 
 			foreach (int u in urgeStats) {
 				Console.Write($"{u,4}|");
@@ -140,35 +163,38 @@ namespace ComplexLifeforms {
 				Console.Write($"|{e,4}");
 			}
 
-			Console.WriteLine($"\n\n{"Moods",-24}||{"Causes of death",-36}");
-			Console.WriteLine($"grea|good|neut|bad |terr||none|strv|dhyd|oeat|ohyd|exhs|maln");
+			Console.Write('|');
 
 			foreach (int m in moodStats) {
-				Console.Write($"{m,4}|");
+				Console.Write($"|{m,4}");
 			}
 
-			foreach (int d in deathByStats) {
-				Console.Write($"|{d,4}");
+			Console.WriteLine($"\n\n{"Causes of death",-36}");
+			Console.WriteLine("none|strv|dhyd|oeat|ohyd|exhs|maln");
+
+			Console.Write($"{deathByStats[0],4}");
+			for (int i = 1; i < deathByStats.Length; ++i) {
+				Console.Write($"|{deathByStats[i],4}");
 			}
 
 			Console.WriteLine();
 
-			// standard deviation of age
-			int[] ages = new int[lifeforms.Length];
+			if (!sdev) {
+				return;
+			}
 
-			for (int i = 0; i < lifeforms.Length; ++i) {
-				ages[i] = lifeforms[i].Age;
+			int[] ages = new int[LIFEFORMS.Count];
+
+			int index = 0;
+			foreach (Lifeform lifeform in LIFEFORMS) {
+				ages[index++] = lifeform.Age;
 			}
 
 			double[] res = Utils.StandardDeviation(ages);
 			Console.WriteLine($"\nmean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
+		}
 
-			int cursorBottom = Console.CursorTop;
-			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
-			Console.WriteLine($"{Environment.TickCount - seed + " ms",54}");
-			Console.SetCursorPosition(0, cursorBottom);
-			
-			// debugging
+		private static void FindErrors () {
 			if (!Lifeform.Logging) {
 				return;
 			}
@@ -183,7 +209,7 @@ namespace ComplexLifeforms {
 				Console.WriteLine("ID: " + lifeform.Id);
 				Console.WriteLine(Lifeform.ToStringHeader());
 
-				foreach (string cycle in LOG[lifeform.Id]) {
+				foreach (string cycle in lifeform.Log) {
 					if (string.IsNullOrEmpty(cycle)) {
 						continue;
 					}
