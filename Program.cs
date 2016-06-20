@@ -18,6 +18,8 @@ namespace ComplexLifeforms {
 
 		private static void Main () {
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
+			World.Separator = '|';
+			World.Extended = true;
 			Lifeform.Separator = '|';
 			Lifeform.Extended = true;
 			Lifeform.Logging = false;
@@ -29,8 +31,8 @@ namespace ComplexLifeforms {
 				LIFEFORMS.Add(new Lifeform(WORLD, _random));
 			}
 
-			Console.WriteLine(World.ToStringHeader('|', true) + "|alive " + $"{seed,54}");
-			Console.Write(WORLD.ToString('|', true) + $"|{LIFEFORMS.Count,6}");
+			Console.WriteLine(World.ToStringHeader() + "|alive " + $"{seed,54}");
+			Console.Write(WORLD.ToString() + $"|{LIFEFORMS.Count,6}");
 
 			int cursorTop = Console.CursorTop;
 			int cursorLeft = Console.CursorLeft;
@@ -67,7 +69,7 @@ namespace ComplexLifeforms {
 
 			Console.SetCursorPosition(cursorLeft, cursorTop);
 			Console.WriteLine($"{updates + " cycles",54}");
-			Console.WriteLine(WORLD.ToString('|', true) + $"|{alive,6}");
+			Console.WriteLine(WORLD.ToString() + $"|{alive,6}");
 			Console.WriteLine();
 
 			Lifeform[] lifeforms = LIFEFORMS.OrderByDescending(c => c.Age).ToArray();

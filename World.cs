@@ -4,6 +4,9 @@ namespace ComplexLifeforms {
 
 	public class World {
 
+		public static char Separator = ' ';
+		public static bool Extended = false;
+
 		/// <summary>Constructor parameters.</summary>
 		public readonly InitWorld Init;
 
@@ -37,11 +40,11 @@ namespace ComplexLifeforms {
 		/// <summary>Amount of available water in the world.</summary>
 		public int Water => _water;
 
-		public static string ToStringHeader (char separator=' ', bool extended=false) {
-			char s = separator;
+		public static string ToStringHeader () {
+			char s = Separator;
 			string data = $"{"size",-10}{s}{"food",-10}{s}{"water",-10}";
 
-			if (extended) {
+			if (Extended) {
 				data += $"{s}eaten  {s}drank  ";
 			}
 
@@ -103,11 +106,11 @@ namespace ComplexLifeforms {
 			++_waterUseCount;
 		}
 
-		public string ToString (char separator=' ', bool extended=false) {
-			char s = separator;
+		public override string ToString () {
+			char s = Separator;
 			string data = $"{Init.Size,10}{s}{_food,10}{s}{_water,10}";
 
-			if (extended) {
+			if (Extended) {
 				data += $"{s}{_foodUseCount,7}{s}{_waterUseCount,7}";
 			}
 
