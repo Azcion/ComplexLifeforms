@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using ComplexLifeforms.Enums;
+using static ComplexLifeforms.Utils;
 
 namespace ComplexLifeforms {
 
@@ -61,8 +62,8 @@ namespace ComplexLifeforms {
 		/// Unpacks SInitLifeform and uses its values.
 		/// </summary>
 		[SuppressMessage("ReSharper", "UnusedMember.Global")]
-		public Lifeform (World world, InitLifeform init, Random random=null)
-				: this(world, random,
+		public Lifeform (World world, InitLifeform init)
+				: this(world,
 						init.HpScale, init.EnergyScale,
 						init.FoodScale, init.WaterScale,
 						init.HealCostScale, init.HealAmountScale,
@@ -72,7 +73,6 @@ namespace ComplexLifeforms {
 						init.EatThreshold, init.DrinkThreshold) {
 		}
 
-		public Lifeform (World world, Random random=null,
 				double hpScale=1, double energyScale=1,
 				double foodScale=1, double waterScale=1,
 				double healCostScale=1, double healAmountScale=1,
@@ -83,7 +83,7 @@ namespace ComplexLifeforms {
 			Id = _id++;
 			Log = new HashSet<string>();
 			World = world;
-			Mood = new MoodManager(this, random);
+			Mood = new MoodManager(this);
 			_alive = true;
 			_deathBy = DeathBy.None;
 

@@ -29,10 +29,10 @@ namespace ComplexLifeforms {
 			MoodManager.Extended = true;
 
 			int seed = Environment.TickCount;
-			_random = new Random(seed);
+			Utils.Random = new Random(seed);
 
 			for (int i = 0; i < COUNT; ++i) {
-				LIFEFORMS.Add(new Lifeform(WORLD, _random));
+				LIFEFORMS.Add(new Lifeform(WORLD));
 			}
 
 			Console.WriteLine(World.ToStringHeader() + "|alive " + $"{seed,54}");
@@ -50,12 +50,13 @@ namespace ComplexLifeforms {
 						continue;
 					}
 
-					if (_random.Next(10) == 0) {
-						lifeform.Eat(_random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
-					}
+						if (Utils.Random.Next(10) == 0) {
+							lifeform.Eat(Utils.Random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
+						}
 
-					if (_random.Next(5) == 0) {
-						lifeform.Drink(_random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
+						if (Utils.Random.Next(5) == 0) {
+							lifeform.Drink(Utils.Random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
+						}
 					}
 
 					lifeform.Update();
@@ -143,10 +144,10 @@ namespace ComplexLifeforms {
 		}
 
 		private static void Statistics (bool sdev) {
-			int[] urgeStats = new int[MoodManager.URGE_COUNT];
-			int[] emotionStats = new int[MoodManager.EMOTION_COUNT];
-			int[] moodStats = new int[Enum.GetNames(typeof(Mood)).Length];
-			int[] deathByStats = new int[Enum.GetNames(typeof(DeathBy)).Length];
+			int[] urgeStats = new int[Utils.URGE_COUNT];
+			int[] emotionStats = new int[Utils.EMOTION_COUNT];
+			int[] moodStats = new int[Utils.MOOD_COUNT];
+			int[] deathByStats = new int[Utils.DEATHBY_COUNT];
 
 			foreach (Lifeform lifeform in GRAVEYARD) {
 				++urgeStats[(int) lifeform.Mood.Urge];
@@ -254,7 +255,7 @@ namespace ComplexLifeforms {
 			Random random = new Random(seed);
 
 			for (int i = 0; i < lifeforms.Count; ++i) {
-				lifeforms.Add(new Lifeform(world, random));
+				lifeforms.Add(new Lifeform(world));
 			}
 
 			for (int i = 0; i < CYCLES; ++i) {

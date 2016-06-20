@@ -2,11 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using ComplexLifeforms.Enums;
 
 namespace ComplexLifeforms {
 
 	[SuppressMessage ("ReSharper", "UnusedMember.Global")]
 	public static class Utils {
+
+		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
+		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
+		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
+		public static readonly int MOOD_COUNT = Enum.GetNames(typeof(Mood)).Length;
+		public static readonly int DEATHBY_COUNT = Enum.GetNames(typeof(DeathBy)).Length;
+
+		public static Random Random = new Random();
 
 		public static double[] StandardDeviation (IEnumerable<int> values) {
 			double mean = 0;

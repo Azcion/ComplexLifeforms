@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using ComplexLifeforms.Enums;
+using static ComplexLifeforms.Utils;
 
 namespace ComplexLifeforms {
 
@@ -10,10 +11,6 @@ namespace ComplexLifeforms {
 
 		public const int URGE_CAP = 50;
 		public const int EMOTION_CAP = 99;
-
-		public static readonly int URGE_COUNT = Enum.GetNames(typeof(Urge)).Length;
-		public static readonly int EMOTION_COUNT = Enum.GetNames(typeof(Emotion)).Length;
-		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 
 		public static char Separator = ' ';
 		public static bool Extended = false;
@@ -38,7 +35,6 @@ namespace ComplexLifeforms {
 						"Remorse", "Contempt", "Aggression", "Optimism" }
 		};
 
-		private readonly Random _random;
 		private readonly Tier[] _emotionBias;
 		private readonly Tier[] _urgeBias;
 		private readonly int[] _emotionValues;
@@ -51,9 +47,9 @@ namespace ComplexLifeforms {
 		private int _moodValue;
 
 		[SuppressMessage("ReSharper", "UnusedMember.Global")]
-		public MoodManager (Lifeform lifeform,
-				IReadOnlyList<Tier> urgeBias, IReadOnlyList<Tier> emotionBias, Random random = null)
-				: this(lifeform, random) {
+		public MoodManager (IReadOnlyList<Tier> urgeBias, IReadOnlyList<Tier> emotionBias,
+				Lifeform lifeform=null)
+				: this(lifeform) {
 			if (urgeBias.Count != URGE_COUNT || emotionBias.Count != EMOTION_COUNT) {
 				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Count} second:{emotionBias.Count}");
 				return;
@@ -68,8 +64,7 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		public MoodManager (Lifeform lifeform, Random random=null) {
-			_random = random ?? new Random();
+		public MoodManager (Lifeform lifeform=null) {
 			Lifeform = lifeform;
 			Asleep = false;
 
@@ -80,11 +75,11 @@ namespace ComplexLifeforms {
 			_emotionBias = new Tier[EMOTION_COUNT];
 
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				_urgeBias[i] = (Tier) _random.Next(TIER_COUNT);
+				_urgeBias[i] = (Tier) Utils.Random.Next(TIER_COUNT);
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				_emotionBias[i] = (Tier) _random.Next(TIER_COUNT);
+				_emotionBias[i] = (Tier) Utils.Random.Next(TIER_COUNT);
 			}
 
 			Update();
@@ -374,7 +369,7 @@ namespace ComplexLifeforms {
 
 		private void ProcessChanges () {
 			for (int i = 0; i < URGE_COUNT; ++i) {
-				if (_random.Next((int) _urgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
+				if (Utils.Random.Next((int) _urgeBias[i], TIER_COUNT + 1) == TIER_COUNT) {
 					if (!Asleep) {
 						++_urgeValues[i];
 					}
@@ -382,7 +377,7 @@ namespace ComplexLifeforms {
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				if (Asleep && _random.Next(TIER_COUNT - (int) _emotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
+				if (Asleep && Utils.Random.Next(TIER_COUNT - (int) _emotionBias[i] + 1, TIER_COUNT + 1) == TIER_COUNT) {
 					_emotionValues[i] -= TIER_COUNT - (int) _emotionBias[i] + 1;
 				}
 			}
