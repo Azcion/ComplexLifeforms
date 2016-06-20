@@ -19,6 +19,8 @@ namespace ComplexLifeforms {
 
 		private static void Main () {
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
+			Lifeform.Separator = '|';
+			Lifeform.Extended = true;
 
 			int seed = Environment.TickCount;
 			_random = new Random(seed);
@@ -79,10 +81,10 @@ namespace ComplexLifeforms {
 			Lifeform[] lifeforms = LIFEFORMS.OrderByDescending(c => c.Age).ToArray();
 
 			if (lifeforms.Length < 8) {
-				Console.WriteLine(Lifeform.ToStringHeader('|', true));
+				Console.WriteLine(Lifeform.ToStringHeader());
 
 				foreach (Lifeform lifeform in lifeforms) {
-					Console.WriteLine(lifeform.ToString('|', true));
+					Console.WriteLine(lifeform.ToString());
 				}
 
 				Console.WriteLine();
@@ -96,14 +98,14 @@ namespace ComplexLifeforms {
 			}
 
 			// oldest and youngest four
-			Console.WriteLine(Lifeform.ToStringHeader('|', true));
+			Console.WriteLine(Lifeform.ToStringHeader());
 
 			for (int i = 0; i < 4; ++i) {
-				Console.WriteLine(lifeforms[i].ToString('|', true));
+				Console.WriteLine(lifeforms[i].ToString());
 			}
 
 			for (int i = 5; i > 1; --i) {
-				Console.WriteLine(lifeforms[lifeforms.Length - i].ToString('|', true));
+				Console.WriteLine(lifeforms[lifeforms.Length - i].ToString());
 			}
 
 			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
@@ -175,7 +177,7 @@ namespace ComplexLifeforms {
 				}
 
 				Console.WriteLine("ID: " + lifeform.Id);
-				Console.WriteLine(Lifeform.ToStringHeader(extended: true));
+				Console.WriteLine(Lifeform.ToStringHeader());
 
 				foreach (string cycle in LOG[lifeform.Id]) {
 					if (string.IsNullOrEmpty(cycle)) {
@@ -238,12 +240,12 @@ namespace ComplexLifeforms {
 
 			int nones = LIFEFORMS.Count(lifeform => lifeform.DeathBy == DeathBy.None);
 
-			if (nones > 0) {
-				Console.WriteLine($"nones: {nones,5} seed: {seed}");
-				return true;
+			if (nones <= 0) {
+				return false;
 			}
 
-			return false;
+			Console.WriteLine($"nones: {nones,5} seed: {seed}");
+			return true;
 		}
 
 	}

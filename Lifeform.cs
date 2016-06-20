@@ -7,6 +7,9 @@ namespace ComplexLifeforms {
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public class Lifeform {
 
+		public static char Separator = ' ';
+		public static bool Extended = false;
+
 		/// <summary>Unique ID assigned to this object.</summary>
 		[SuppressMessage ("ReSharper", "NotAccessedField.Global")]
 		public readonly int Id;
@@ -114,14 +117,16 @@ namespace ComplexLifeforms {
 		public bool Alive => _alive;
 		public DeathBy DeathBy => _deathBy;
 
-		public static string ToStringHeader (char separator=' ', bool extended=false) {
-			char s = separator;
+		public static string ToStringHeader () {
+			char s = Separator;
 			string data = $"age  {s}hp   {s}energ{s}food {s}water";
 
-			if (extended) {
-				data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
-						+ $"{s}{"mood",-8}{s}{"death by",-13}{s}asleep";
+			if (!Extended) {
+				return data;
 			}
+
+			data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
+					+ $"{s}{"mood",-8}{s}{"death by",-13}{s}asleep";
 
 			return data;
 		}
@@ -243,17 +248,17 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		public string ToString (char separator=' ', bool extended=false) {
-			char s = separator;
+		public override string ToString () {
+			char s = Separator;
 			string data = $"{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
 
-			if (extended) {
-				string emotion = MoodManager.EmotionName(Mood);
-
-				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{emotion,-12}{s}{Mood.Mood,-8}"
-						+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
+			if (!Extended) {
+				return data;
 			}
+
+			data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
+					+ $"{s}{Mood.Urge,-9}{s}{MoodManager.EmotionName(Mood),-12}{s}{Mood.Mood,-8}"
+					+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
 
 			return data;
 		}
