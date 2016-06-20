@@ -195,10 +195,10 @@ namespace ComplexLifeforms {
 				return;
 			}
 
-			int[] ages = new int[LIFEFORMS.Count];
+			int[] ages = new int[GRAVEYARD.Count];
 
 			int index = 0;
-			foreach (Lifeform lifeform in LIFEFORMS) {
+			foreach (Lifeform lifeform in GRAVEYARD) {
 				ages[index++] = lifeform.Age;
 			}
 
