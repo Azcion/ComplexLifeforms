@@ -78,15 +78,17 @@ namespace ComplexLifeforms {
 						continue;
 					}
 
-					if (lifeform.Mood.Mood == Mood.Great && lifeform.Mood.Urge == Urge.Reproduce) {
+					if (lifeform.Age > 25 && lifeform.Age < 50
+							&& lifeform.Mood.Mood == Mood.Great
+							&& lifeform.Mood.Urge == Urge.Reproduce) {
 						BROTHEL.Add(lifeform);
 					} else {
-						if (Utils.Random.Next(10) == 0) {
-							lifeform.Eat(Utils.Random.Next(10, 20) * WORLD.Init.FoodDrain * 3);
+						if (Utils.Random.Next(5) == 0) {
+							lifeform.Eat(Utils.Random.Next(5, 10) * WORLD.Init.FoodDrain * 3);
 						}
 
-						if (Utils.Random.Next(5) == 0) {
-							lifeform.Drink(Utils.Random.Next(2, 10) * WORLD.Init.WaterDrain * 3);
+						if (Utils.Random.Next(3) == 0) {
+							lifeform.Drink(Utils.Random.Next(1, 10) * WORLD.Init.WaterDrain * 3);
 						}
 					}
 
