@@ -611,7 +611,7 @@ namespace ComplexLifeforms {
 			}
 
 			_hp = -1;
-			World.Decompose(_food, _water, Init);
+			World.Decompose(_food, _water);
 		}
 
 	}
