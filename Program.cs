@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ComplexLifeforms.Enums;
+using static ComplexLifeforms.Utils;
 
 namespace ComplexLifeforms {
 
@@ -11,7 +12,7 @@ namespace ComplexLifeforms {
 		private const int COUNT = 1000;
 		private const int CYCLES = 10000;
 
-		private static readonly World WORLD = new World(5000000);
+		private static readonly World WORLD = new World(0);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> BROTHEL = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> LIMBO = new HashSet<Lifeform>();
@@ -36,12 +37,12 @@ namespace ComplexLifeforms {
 				LIFEFORMS.Add(new Lifeform(WORLD));
 			}
 
-			Console.WriteLine(World.ToStringHeader() + "|alive |max   " + $"{seed,47}");
-			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|     0");
+			Console.WriteLine(World.ToStringHeader() + "|alive |max   " + $"{seed,45}");
+			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|{COUNT,6}");
 
 			int cursorTop = Console.CursorTop;
 			int cursorLeft = Console.CursorLeft;
-			Console.WriteLine("\n\nProcessing cycles...");
+			Console.Write("\n\nProcessing cycles... ");
 
 			Run(cursorLeft, cursorTop);
 			TopAndBottom(4, 0, false);
@@ -49,18 +50,24 @@ namespace ComplexLifeforms {
 
 			int cursorBottom = Console.CursorTop;
 			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
-			Console.WriteLine($"{Environment.TickCount - start + "ms",47}");
+			Console.WriteLine($"{Environment.TickCount - start + "ms",45}");
 			Console.SetCursorPosition(0, cursorBottom);
 			
 			FindErrors();
 		}
 
 		private static void Run (int cursorLeft, int cursorTop) {
+			int cursorCycleTop = Console.CursorTop;
+			int cursorCycleLeft = Console.CursorLeft;
+
 			int cycles = CYCLES;
 			int updates = 0;
 			int maxLifeforms = COUNT;
 
 			for (int i = 0; i < CYCLES; ++i) {
+				Console.SetCursorPosition(cursorCycleLeft, cursorCycleTop);
+				Console.Write($"[{i}/{CYCLES}]");
+
 				foreach (Lifeform lifeform in LIFEFORMS) {
 					if (Console.KeyAvailable) {
 						ConsoleKeyInfo key = Console.ReadKey(true);
@@ -68,8 +75,13 @@ namespace ComplexLifeforms {
 						switch (key.Key) {
 							case ConsoleKey.Spacebar:
 							case ConsoleKey.Escape:
+								Console.SetCursorPosition(0, 3);
+								Console.Write("                                                     ");
+								Console.SetCursorPosition(cursorLeft, cursorTop);
+								Console.WriteLine($"{i + 1 + " cycles, " + updates + " updates",45}");
+								Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
+								Console.WriteLine();
 								return;
-
 						}
 					}
 
@@ -133,11 +145,11 @@ namespace ComplexLifeforms {
 				Console.SetCursorPosition(0, 2);
 				Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
 			}
-
+			
 			Console.SetCursorPosition(0, 3);
-			Console.Write("                    ");
+			Console.Write("                                                     ");
 			Console.SetCursorPosition(cursorLeft, cursorTop);
-			Console.WriteLine($"{cycles + " cycles, " + updates + " updates",47}");
+			Console.WriteLine($"{cycles + " cycles, " + updates + " updates",45}");
 			Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
 			Console.WriteLine();
 		}
@@ -196,10 +208,10 @@ namespace ComplexLifeforms {
 		}
 
 		private static void Statistics (bool extra) {
-			int[] urgeStats = new int[Utils.URGE_COUNT];
-			int[] emotionStats = new int[Utils.EMOTION_COUNT];
-			int[] moodStats = new int[Utils.MOOD_COUNT];
-			int[] deathByStats = new int[Utils.DEATHBY_COUNT];
+			int[] urgeStats = new int[URGE_COUNT];
+			int[] emotionStats = new int[EMOTION_COUNT];
+			int[] moodStats = new int[MOOD_COUNT];
+			int[] deathByStats = new int[DEATHBY_COUNT];
 
 			foreach (Lifeform lifeform in GRAVEYARD) {
 				++urgeStats[(int) lifeform.Mood.Urge];
@@ -208,41 +220,41 @@ namespace ComplexLifeforms {
 				++deathByStats[(int) lifeform.DeathBy];
 			}
 
-			const int length = 5;
+			int length = Math.Max(4, GRAVEYARD.Count.ToString().Length);
 			MoodManager.TruncateTo = length;
 
 			MoodManager.Extended = false;
-			Console.WriteLine("\n" + Utils.Truncate("Urges", 35, 1)
-					+ "||" + Utils.Truncate("Emotions", 47, 1));
+			Console.WriteLine("\n" + Truncate("Urges", URGE_COUNT * length + URGE_COUNT - 1, 1)
+					+ "||" + Truncate("Emotions", EMOTION_COUNT * length + EMOTION_COUNT - 1, 1));
 			Console.WriteLine(MoodManager.ToStringHeader());
 			
 			foreach (int u in urgeStats) {
-				Console.Write(Utils.Truncate(u.ToString(), length, -1) + "|");
+				Console.Write(Truncate(u.ToString(), length, -1) + "|");
 			}
 
 			foreach (int e in emotionStats) {
-				Console.Write("|" + Utils.Truncate(e.ToString(), length, -1));
+				Console.Write("|" + Truncate(e.ToString(), length, -1));
 			}
 
-			Console.WriteLine("\n\n" + Utils.Truncate("Moods", 29, 1)
-					+ "||" + Utils.Truncate("Causes of death", 40, 1));
+			Console.WriteLine("\n\n" + Truncate("Moods", MOOD_COUNT * length + MOOD_COUNT - 1, 1)
+					+ "||" + Truncate("Causes of death", DEATHBY_COUNT * length + DEATHBY_COUNT - 1, 1));
 
 			foreach (string mood in Enum.GetNames(typeof(Mood))) {
-				Console.Write(Utils.Truncate(mood, length, 1) + "|");
+				Console.Write(Truncate(mood, length, 1) + "|");
 			}
 
 			foreach (string cause in Enum.GetNames(typeof(DeathBy))) {
-				Console.Write("|" + Utils.Truncate(cause, length, 1));
+				Console.Write("|" + Truncate(cause, length, 1));
 			}
 
 			Console.WriteLine();
 
 			foreach (int m in moodStats) {
-				Console.Write(Utils.Truncate(m.ToString(), length, -1) + "|");
+				Console.Write(Truncate(m.ToString(), length, -1) + "|");
 			}
 
 			foreach (int d in deathByStats) {
-				Console.Write("|" + Utils.Truncate(d.ToString(), length, -1));
+				Console.Write("|" + Truncate(d.ToString(), length, -1));
 			}
 
 			Console.WriteLine();
@@ -260,7 +272,7 @@ namespace ComplexLifeforms {
 				ages[index++] = lifeform.Age;
 			}
 
-			double[] res = Utils.StandardDeviation(ages);
+			double[] res = StandardDeviation(ages);
 			Console.WriteLine($"mean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
 		}
 

@@ -45,7 +45,7 @@ namespace ComplexLifeforms {
 			string data = $"{"size",-10}{s}{"food",-10}{s}{"water",-10}";
 
 			if (Extended) {
-				data += $"{s}eaten  {s}drank  ";
+				data += $"{s}eaten   {s}drank   ";
 			}
 
 			return data;
@@ -111,7 +111,7 @@ namespace ComplexLifeforms {
 			string data = $"{Init.Size,10}{s}{_food,10}{s}{_water,10}";
 
 			if (Extended) {
-				data += $"{s}{_foodUseCount,7}{s}{_waterUseCount,7}";
+				data += $"{s}{_foodUseCount,8}{s}{_waterUseCount,8}";
 			}
 
 			return data;
