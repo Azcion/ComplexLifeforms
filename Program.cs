@@ -55,12 +55,24 @@ namespace ComplexLifeforms {
 			FindErrors();
 		}
 
+		private static void Run (int cursorLeft, int cursorTop) {
 			int cycles = CYCLES;
 			int updates = 0;
-			int maxLifeforms = 0;
+			int maxLifeforms = COUNT;
 
 			for (int i = 0; i < CYCLES; ++i) {
 				foreach (Lifeform lifeform in LIFEFORMS) {
+					if (Console.KeyAvailable) {
+						ConsoleKeyInfo key = Console.ReadKey(true);
+
+						switch (key.Key) {
+							case ConsoleKey.Spacebar:
+							case ConsoleKey.Escape:
+								return;
+
+						}
+					}
+
 					if (!lifeform.Alive) {
 						LIMBO.Add(lifeform);
 						continue;
