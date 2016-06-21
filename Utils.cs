@@ -34,11 +34,18 @@ namespace ComplexLifeforms {
 			return res;
 		}
 
-		public static string Truncate (string value, int length, bool whitespace=false) {
+		public static string Truncate (string value, int length, int whitespace=0) {
 			int outLength = Math.Min(value.Length, length);
 			string result = value.Substring(0, outLength);
 
-			return !whitespace ? result : result.PadRight(length);
+			switch (whitespace) {
+				case 1:
+					return result.PadRight(length);
+				case -1:
+					return result.PadLeft(length);
+				default:
+					return result;
+			}
 		}
 
 		public static int MaxIndex (IEnumerable<int> array) {

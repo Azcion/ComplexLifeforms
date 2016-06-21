@@ -192,7 +192,7 @@ namespace ComplexLifeforms {
 				};
 
 				foreach (string element in elements) {
-					data += s + Truncate(element, TruncateTo, true);
+					data += s + Truncate(element, TruncateTo, 1);
 				}
 			}
 
@@ -340,7 +340,7 @@ namespace ComplexLifeforms {
 				};
 
 				foreach (object element in elements) {
-					data += s + Truncate(element.ToString(), TruncateTo, true);
+					data += s + Truncate(element.ToString(), TruncateTo, 1);
 				}
 			}
 

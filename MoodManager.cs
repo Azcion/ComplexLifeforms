@@ -13,6 +13,7 @@ namespace ComplexLifeforms {
 		public const int EMOTION_CAP = 99;
 
 		public static char Separator = ' ';
+		public static int TruncateTo = 4;
 		public static bool Extended = false;
 
 		/// <summary>Represents the lifeform which this object belongs to.</summary>
@@ -109,21 +110,21 @@ namespace ComplexLifeforms {
 			bool first = true;
 			foreach (string urge in Enum.GetNames(typeof(Urge))) {
 				if (first) {
-					data += $"{Utils.Truncate(urge, 4),-4}";
+					data += Truncate(urge, TruncateTo, 1);
 					first = false;
 					continue;
 				}
 
-				data += $"{s}{Utils.Truncate(urge, 4),-4}";
+				data += s + Truncate(urge, TruncateTo, 1);
 			}
 
 			data += s;
 			foreach (string emotion in Enum.GetNames(typeof(Emotion))) {
-				data += $"{s}{Utils.Truncate(emotion, 4),-4}";
+				data += s + Truncate(emotion, TruncateTo, 1);
 			}
 
 			if (Extended) {
-				data += $"{s}{s}mood";
+				data += $"{s}{s}" + Truncate("mood", TruncateTo, 1);
 			}
 
 			return data;
