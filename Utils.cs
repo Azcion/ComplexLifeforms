@@ -48,6 +48,10 @@ namespace ComplexLifeforms {
 			}
 		}
 
+		public static string Truncate (object value, int length, int whitespace = 0) {
+			return Truncate(value.ToString(), length, whitespace);
+		}
+
 		public static int MaxIndex (IEnumerable<int> array) {
 			int maxIndex = -1;
 			int maxValue = 0;

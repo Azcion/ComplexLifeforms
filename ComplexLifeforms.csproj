@@ -33,7 +33,7 @@
     <UpdateAssemblyFileVersion>False</UpdateAssemblyFileVersion>
     <UpdateAssemblyInfoVersion>False</UpdateAssemblyInfoVersion>
     <AssemblyVersionSettings>None.IncrementOnDemandWithReset.DayStamp.None</AssemblyVersionSettings>
-    <AssemblyVersion>0.1.21.</AssemblyVersion>
+    <AssemblyVersion>0.1.23.</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -74,6 +74,7 @@
     <Compile Include="Enums\Mood.cs" />
     <Compile Include="Enums\Tier.cs" />
     <Compile Include="Enums\Urge.cs" />
+    <Compile Include="Ghost.cs" />
     <Compile Include="Lifeform.cs" />
     <Compile Include="MoodManager.cs" />
     <Compile Include="Program.cs" />
