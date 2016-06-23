@@ -9,7 +9,7 @@ namespace ComplexLifeforms {
 	internal static class Program {
 
 		private const int COUNT = 1000;
-		private const int CYCLES = 10000;
+		private const int CYCLES = 50000;
 
 		private static readonly World WORLD = new World(0);
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
@@ -36,23 +36,25 @@ namespace ComplexLifeforms {
 				LIFEFORMS.Add(new Lifeform(WORLD));
 			}
 
-			Console.WriteLine(World.ToStringHeader() + "|alive |max   " + $"{seed,45}");
+			Console.Write(World.ToStringHeader() + "|alive |max   ");
+			Console.WriteLine(Truncate(seed, Console.WindowWidth - Console.CursorLeft - 1, -1));
 			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|{COUNT,6}");
 
-			int cursorTop = Console.CursorTop;
-			int cursorLeft = Console.CursorLeft;
+			int cTop = Console.CursorTop;
+			int cLeft = Console.CursorLeft;
 			Console.Write("\n\nProcessing cycles... ");
 
-			Run(cursorLeft, cursorTop);
+			Run(cLeft, cTop);
 			TopAndBottom(4, 0, false);
 			Statistics(true);
 
-			int cursorBottom = Console.CursorTop;
-			Console.SetCursorPosition(cursorLeft, cursorTop + 1);
-			Console.WriteLine($"{Environment.TickCount - start + "ms",45}");
-			Console.SetCursorPosition(0, cursorBottom);
-			
-			FindErrors();
+			int cBottom = Console.CursorTop;
+			string time = Environment.TickCount - start + "ms";
+
+			Console.SetCursorPosition(cLeft, cTop + 1);
+			Console.WriteLine(Truncate(time, Console.WindowWidth - Console.CursorLeft - 1, -1));
+			Console.SetCursorPosition(0, cBottom);
+			Console.ReadLine();
 		}
 
 		private static void Run (int cursorLeft, int cursorTop) {
@@ -68,20 +70,8 @@ namespace ComplexLifeforms {
 				Console.Write($"[{i}/{CYCLES}]");
 
 				foreach (Lifeform lifeform in LIFEFORMS) {
-					if (Console.KeyAvailable) {
-						ConsoleKeyInfo key = Console.ReadKey(true);
-
-						switch (key.Key) {
-							case ConsoleKey.Spacebar:
-							case ConsoleKey.Escape:
-								Console.SetCursorPosition(0, 3);
-								Console.Write("                                                     ");
-								Console.SetCursorPosition(cursorLeft, cursorTop);
-								Console.WriteLine($"{i + 1 + " cycles, " + updates + " updates",45}");
-								Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
-								Console.WriteLine();
-								return;
-						}
+					if (BreakIfKey(cursorLeft, cursorTop, i + 1, updates, maxLifeforms)) {
+						return;
 					}
 
 					if (!lifeform.Alive) {
@@ -113,23 +103,7 @@ namespace ComplexLifeforms {
 
 				LIFEFORMS.ExceptWith(LIMBO);
 				LIMBO.Clear();
-
-				Lifeform parentA = null;
-
-				foreach (Lifeform lifeform in BROTHEL) {
-					if (parentA == null) {
-						parentA = lifeform;
-						continue;
-					}
-
-					Lifeform child = Lifeform.Breed(parentA, lifeform);
-					parentA = null;
-
-					if (child != null) {
-						LIFEFORMS.Add(child);
-					}
-				}
-
+				DoBreeding();
 				BROTHEL.Clear();
 
 				if (LIFEFORMS.Count == 0) {
@@ -145,12 +119,51 @@ namespace ComplexLifeforms {
 				Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
 			}
 			
+			PrintStats(cursorLeft, cursorTop, cycles, updates, maxLifeforms);
+		}
+
+		private static bool BreakIfKey (int cLeft, int cTop, int cycles, int updates, int max) {
+			if (Console.KeyAvailable) {
+				switch (Console.ReadKey(true).Key) {
+					case ConsoleKey.Spacebar:
+					case ConsoleKey.Escape:
+						PrintStats(cLeft, cTop, cycles, updates, max);
+						return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static void PrintStats (int cLeft , int cTop, int cycles, int updates, int max) {
 			Console.SetCursorPosition(0, 3);
-			Console.Write("                                                     ");
-			Console.SetCursorPosition(cursorLeft, cursorTop);
-			Console.WriteLine($"{cycles + " cycles, " + updates + " updates",45}");
-			Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}");
+			Console.Write("                                                    ");
+			Console.SetCursorPosition(cLeft, cTop);
+
+			string progress = cycles + " cycles, " + updates + " updates";
+			int width = Console.WindowWidth - cLeft - 1;
+
+			Console.WriteLine(Truncate(progress, width, -1));
+			Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{max,6}");
 			Console.WriteLine();
+		}
+
+		private static void DoBreeding () {
+			Lifeform parentA = null;
+
+			foreach (Lifeform lifeform in BROTHEL) {
+				if (parentA == null) {
+					parentA = lifeform;
+					continue;
+				}
+
+				Lifeform child = Lifeform.Breed(parentA, lifeform);
+				parentA = null;
+
+				if (child != null) {
+					LIFEFORMS.Add(child);
+				}
+			}
 		}
 
 		private static void TopAndBottom (int oldest, int youngest, bool data) {
