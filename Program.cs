@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ComplexLifeforms.Enums;
 using static ComplexLifeforms.Utils;
@@ -16,7 +15,7 @@ namespace ComplexLifeforms {
 		private static readonly HashSet<Lifeform> LIFEFORMS = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> BROTHEL = new HashSet<Lifeform>();
 		private static readonly HashSet<Lifeform> LIMBO = new HashSet<Lifeform>();
-		private static readonly HashSet<Lifeform> GRAVEYARD = new HashSet<Lifeform>();
+		private static readonly HashSet<Ghost> GRAVEYARD = new HashSet<Ghost>();
 
 		private static void Main () {
 			int start = Environment.TickCount;
@@ -109,10 +108,10 @@ namespace ComplexLifeforms {
 				}
 
 				foreach (Lifeform lifeform in LIMBO) {
-					GRAVEYARD.Add(lifeform);
-					LIFEFORMS.Remove(lifeform);
+					GRAVEYARD.Add(new Ghost(lifeform));
 				}
 
+				LIFEFORMS.ExceptWith(LIMBO);
 				LIMBO.Clear();
 
 				Lifeform parentA = null;
@@ -155,7 +154,11 @@ namespace ComplexLifeforms {
 		}
 
 		private static void TopAndBottom (int oldest, int youngest, bool data) {
-			Lifeform[] lifeforms = GRAVEYARD
+			if (LIFEFORMS.Count == 0) {
+				return;
+			}
+
+			Lifeform[] lifeforms = LIFEFORMS
 					.OrderByDescending(c => c.BreedCount)
 					.ThenByDescending(c => c.Age)
 					.ToArray();
@@ -213,11 +216,11 @@ namespace ComplexLifeforms {
 			int[] moodStats = new int[MOOD_COUNT];
 			int[] deathByStats = new int[DEATHBY_COUNT];
 
-			foreach (Lifeform lifeform in GRAVEYARD) {
-				++urgeStats[(int) lifeform.Mood.Urge];
-				++emotionStats[(int) lifeform.Mood.Emotion];
-				++moodStats[(int) lifeform.Mood.Mood];
-				++deathByStats[(int) lifeform.DeathBy];
+			foreach (Ghost ghost in GRAVEYARD) {
+				++urgeStats[ghost.Urge];
+				++emotionStats[ghost.Emotion];
+				++moodStats[ghost.Mood];
+				++deathByStats[ghost.DeathBy];
 			}
 
 			int length = Math.Max(4, GRAVEYARD.Count.ToString().Length);
@@ -229,11 +232,11 @@ namespace ComplexLifeforms {
 			Console.WriteLine(MoodManager.ToStringHeader());
 			
 			foreach (int u in urgeStats) {
-				Console.Write(Truncate(u.ToString(), length, -1) + "|");
+				Console.Write(Truncate(u, length, -1) + "|");
 			}
 
 			foreach (int e in emotionStats) {
-				Console.Write("|" + Truncate(e.ToString(), length, -1));
+				Console.Write("|" + Truncate(e, length, -1));
 			}
 
 			Console.WriteLine("\n\n" + Truncate("Moods", MOOD_COUNT * length + MOOD_COUNT - 1, 1)
@@ -250,11 +253,11 @@ namespace ComplexLifeforms {
 			Console.WriteLine();
 
 			foreach (int m in moodStats) {
-				Console.Write(Truncate(m.ToString(), length, -1) + "|");
+				Console.Write(Truncate(m, length, -1) + "|");
 			}
 
 			foreach (int d in deathByStats) {
-				Console.Write("|" + Truncate(d.ToString(), length, -1));
+				Console.Write("|" + Truncate(d, length, -1));
 			}
 
 			Console.WriteLine();
@@ -268,8 +271,8 @@ namespace ComplexLifeforms {
 			int[] ages = new int[GRAVEYARD.Count];
 
 			int index = 0;
-			foreach (Lifeform lifeform in GRAVEYARD) {
-				ages[index++] = lifeform.Age;
+			foreach (Ghost ghost in GRAVEYARD) {
+				ages[index++] = ghost.Age;
 			}
 
 			double[] res = StandardDeviation(ages);
