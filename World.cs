@@ -4,7 +4,10 @@ namespace ComplexLifeforms {
 
 	public class World {
 
+		/// <summary>Column separator for ToString and ToStringHeader methods. Default=' '</summary>
 		public static char Separator = ' ';
+
+		/// <summary>Adds statistical data to ToString and ToStringHeader methods. Default=false</summary>
 		public static bool Extended = false;
 
 		/// <summary>Constructor parameters.</summary>

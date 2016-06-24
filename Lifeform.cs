@@ -9,9 +9,16 @@ namespace ComplexLifeforms {
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 	public class Lifeform {
 
+		/// <summary>Column separator for ToString and ToStringHeader methods. Default=' '</summary>
 		public static char Separator = ' ';
+
+		/// <summary>Column width limit for ToString and ToStringHeader methods. Default=0</summary>
 		public static int TruncateTo = 0;
+
+		/// <summary>Adds additional data to ToString and ToStringHeader methods. Default=false</summary>
 		public static bool Extended = false;
+
+		/// <summary>Enables calling and saving ToString in every update cycle. Default=false</summary>
 		public static bool Logging = false;
 
 		/// <summary>Unique ID assigned to this object.</summary>

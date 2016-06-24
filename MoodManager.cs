@@ -12,8 +12,13 @@ namespace ComplexLifeforms {
 		public const int URGE_CAP = 50;
 		public const int EMOTION_CAP = 99;
 
+		/// <summary>Column separator for ToString and ToStringHeader methods. Default=' '</summary>
 		public static char Separator = ' ';
+
+		/// <summary>Column width limit for ToString and ToStringHeader methods. Default=4</summary>
 		public static int TruncateTo = 4;
+
+		/// <summary>Adds _moodValue to ToString and ToStringHeader methods. Default=false</summary>
 		public static bool Extended = false;
 
 		/// <summary>Represents the lifeform which this object belongs to.</summary>
