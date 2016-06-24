@@ -7,6 +7,7 @@ using static ComplexLifeforms.Utils;
 namespace ComplexLifeforms {
 
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+	[SuppressMessage ("ReSharper", "ConvertToAutoPropertyWhenPossible")]
 	public class Lifeform {
 
 		/// <summary>Column separator for ToString and ToStringHeader methods. Default=' '</summary>

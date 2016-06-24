@@ -7,6 +7,7 @@ using static ComplexLifeforms.Utils;
 namespace ComplexLifeforms {
 
 	[SuppressMessage ("ReSharper", "MemberCanBePrivate.Global")]
+	[SuppressMessage("ReSharper", "ConvertToAutoPropertyWhenPossible")]
 	public class MoodManager {
 
 		public const int URGE_CAP = 50;
