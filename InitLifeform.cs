@@ -1,4 +1,6 @@
-﻿namespace ComplexLifeforms {
+﻿using System.Collections.Generic;
+
+namespace ComplexLifeforms {
 
 	public class InitLifeform {
 
@@ -28,37 +30,29 @@
 		public InitLifeform () {
 		}
 
-		public InitLifeform (int baseHp, int baseEnergy,
-				int baseFood, int baseWater,
-				double hpScale, double energyScale,
-				double foodScale, double waterScale,
-				double healCostScale, double healAmountScale,
-				double hpDrainScale, double energyDrainScale,
-				double foodDrainScale, double waterDrainScale,
-				double healThreshold, double sleepThreshold,
-				double eatThreshold, double drinkThreshold) {
-			Hp = (int) (baseHp * hpScale);
-			Energy = (int) (baseEnergy * energyScale);
-			Food = (int) (baseFood * foodScale);
-			Water = (int) (baseWater * waterScale);
+		public InitLifeform (IReadOnlyList<int> bases, IReadOnlyList<double> scales) {
+			Hp = (int) (bases[0] * scales[0]);
+			Energy = (int) (bases[1] * scales[1]);
+			Food = (int) (bases[2] * scales[2]);
+			Water = (int) (bases[3] * scales[3]);
 
-			HpScale = hpScale;
-			EnergyScale = energyScale;
-			FoodScale = foodScale;
-			WaterScale = waterScale;
+			HpScale = scales[0];
+			EnergyScale = scales[1];
+			FoodScale = scales[2];
+			WaterScale = scales[3];
 
-			HealCostScale = healCostScale;
-			HealAmountScale = healAmountScale;
+			HealCostScale = scales[4];
+			HealAmountScale = scales[5];
 
-			HpDrainScale = hpDrainScale;
-			EnergyDrainScale = energyDrainScale;
-			FoodDrainScale = foodDrainScale;
-			WaterDrainScale = waterDrainScale;
+			HpDrainScale = scales[6];
+			EnergyDrainScale = scales[7];
+			FoodDrainScale = scales[8];
+			WaterDrainScale = scales[9];
 
-			HealThreshold = healThreshold;
-			SleepThreshold = sleepThreshold;
-			EatThreshold = eatThreshold;
-			DrinkThreshold = drinkThreshold;
+			HealThreshold = scales[10];
+			SleepThreshold = scales[11];
+			EatThreshold = scales[12];
+			DrinkThreshold = scales[13];
 		}
 
 	}

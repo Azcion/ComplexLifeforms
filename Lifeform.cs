@@ -28,11 +28,10 @@ namespace ComplexLifeforms {
 		public readonly int ParentIdA;
 		public readonly int ParentIdB;
 
+		public readonly Species Species;
+
 		/// <summary>Log of ToString for every update.</summary>
 		public readonly HashSet<string> Log;
-
-		/// <summary>Constructor parameters.</summary>
-		public readonly InitLifeform Init;
 
 		/// <summary>Mood, urge and emotion processor.</summary>
 		public readonly MoodManager Mood;
@@ -41,6 +40,9 @@ namespace ComplexLifeforms {
 		public readonly World World;
 
 		private static int _id;
+
+		/// <summary>Constructor parameters.</summary>
+		private readonly InitLifeform _init;
 
 		private readonly int _healThreshold;
 		private readonly int _sleepThreshold;
@@ -72,76 +74,48 @@ namespace ComplexLifeforms {
 		private int _breedCount;
 
 		/// <summary>
-		/// Unpacks SInitLifeform and uses its values.
-		/// </summary>
-		[SuppressMessage("ReSharper", "UnusedMember.Global")]
-		public Lifeform (World world, InitLifeform init)
-				: this(world,
-						init.HpScale, init.EnergyScale,
-						init.FoodScale, init.WaterScale,
-						init.HealCostScale, init.HealAmountScale,
-						init.HpDrainScale, init.EnergyDrainScale,
-						init.FoodDrainScale, init.WaterDrainScale,
-						init.HealThreshold, init.SleepThreshold,
-						init.EatThreshold, init.DrinkThreshold) {
-		}
-
-		/// <summary>
 		/// Constructor for making a new child based on two parents.
 		/// </summary>
-		public Lifeform (World world, InitLifeform init, MoodManager mood, int parentIdA, int parentIdB)
-				: this(world, init) {
+		public Lifeform (World world, Species species, MoodManager mood, int parentIdA, int parentIdB)
+				: this(world, species) {
 			ParentIdA = parentIdA;
 			ParentIdB = parentIdB;
 			Mood = mood;
 		}
 
-		public Lifeform (World world,
-				double hpScale=1, double energyScale=1,
-				double foodScale=1, double waterScale=1,
-				double healCostScale=1, double healAmountScale=1,
-				double hpDrainScale=1, double energyDrainScale=1,
-				double foodDrainScale=1, double waterDrainScale=1,
-				double healThreshold=0.5, double sleepThreshold=0.25,
-				double eatThreshold=0.5, double drinkThreshold=0.5) {
+		public Lifeform (World world, Species species) {
 			Id = _id++;
 			ParentIdA = -1;
 			ParentIdB = -1;
-			Log = new HashSet<string>();
+			Species = species;
+			Log = Logging ? new HashSet<string>() : null;
 			World = world;
 			Mood = new MoodManager(this);
+
+			_init = SpeciesContainer.INIT[species];
 			_alive = true;
 			_deathBy = DeathBy.None;
 
 			InitWorld w = world.Init;
+			InitLifeform l = _init;
 
-			Init = new InitLifeform(w.BaseHp, w.BaseEnergy,
-					w.BaseFood, w.BaseWater,
-					hpScale, energyScale,
-					foodScale, waterScale,
-					healCostScale, healAmountScale,
-					hpDrainScale, energyDrainScale,
-					foodDrainScale, waterDrainScale,
-					healThreshold, sleepThreshold,
-					eatThreshold, drinkThreshold);
+			_healCost = (int) (w.HealCost * l.HealCostScale);
+			_healAmount = (int) (w.HealAmount * l.HealAmountScale);
 
-			_healCost = (int) (w.HealCost * healCostScale);
-			_healAmount = (int) (w.HealAmount * healAmountScale);
+			_hpDrain = (int) (w.HpDrain * l.HpDrainScale);
+			_energyDrain = (int) (w.EnergyDrain * l.EnergyDrainScale);
+			_foodDrain = (int) (w.FoodDrain * l.FoodDrainScale);
+			_waterDrain = (int) (w.WaterDrain * l.WaterDrainScale);
 
-			_hpDrain = (int) (w.HpDrain * hpDrainScale);
-			_energyDrain = (int) (w.EnergyDrain * energyDrainScale);
-			_foodDrain = (int) (w.FoodDrain * foodDrainScale);
-			_waterDrain = (int) (w.WaterDrain * waterDrainScale);
+			_hp = (int) (w.BaseHp * l.HpScale);
+			_energy = (int) (w.BaseEnergy * l.EnergyScale);
+			_food = (int) (w.BaseFood * l.FoodScale);
+			_water = (int) (w.BaseWater * l.WaterScale);
 
-			_hp = (int) (w.BaseHp * hpScale);
-			_energy = (int) (w.BaseEnergy * energyScale);
-			_food = (int) (w.BaseFood * foodScale);
-			_water = (int) (w.BaseWater * waterScale);
-
-			_healThreshold = (int) (_hp * healThreshold);
-			_sleepThreshold = (int) (_energy * sleepThreshold);
-			_eatThreshold = (int) (_food * eatThreshold);
-			_drinkThreshold = (int) (_water * drinkThreshold);
+			_healThreshold = (int) (_hp * l.HealThreshold);
+			_sleepThreshold = (int) (_energy * l.SleepThreshold);
+			_eatThreshold = (int) (_food * l.EatThreshold);
+			_drinkThreshold = (int) (_water * l.DrinkThreshold);
 		}
 
 		public int Age => _age;
@@ -170,7 +144,7 @@ namespace ComplexLifeforms {
 			}
 
 			MoodManager mood = new MoodManager(urgeBias, emotionBias);
-			Lifeform child = new Lifeform(parentA.World, parentA.Init, mood, parentA.Id, parentB.Id) {
+			Lifeform child = new Lifeform(parentA.World, parentA.Species, mood, parentA.Id, parentB.Id) {
 				_food = parentA._foodDrain + parentB._foodDrain,
 				_water = parentA._waterDrain + parentB._waterDrain
 			};
@@ -183,7 +157,7 @@ namespace ComplexLifeforms {
 
 		public static string ToStringHeader () {
 			char s = Separator;
-			string data = $"age  {s}hp   {s}energ{s}food {s}water";
+			string data = $"species{s}age  {s}hp   {s}energ{s}food {s}water";
 
 			if (!Extended) {
 				return data;
@@ -275,7 +249,7 @@ namespace ComplexLifeforms {
 			_water += deltaWater;
 			++_eatCount;
 
-			if (_food > Init.Food) {
+			if (_food > _init.Food) {
 				_hp -= _hpDrain * 4;
 
 				Mood.AffectUrge(Urge.Eat, -2);
@@ -315,7 +289,7 @@ namespace ComplexLifeforms {
 			_water += deltaWater;
 			++_drinkCount;
 
-			if (_water > Init.Water) {
+			if (_water > _init.Water) {
 				_hp -= _hpDrain * 4;
 
 				Mood.AffectUrge(Urge.Drink, -2);
@@ -330,7 +304,7 @@ namespace ComplexLifeforms {
 
 		public override string ToString () {
 			char s = Separator;
-			string data = $"{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
+			string data = $"{Species,-7}{s}{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
 
 			if (!Extended) {
 				return data;
@@ -356,7 +330,7 @@ namespace ComplexLifeforms {
 		}
 
 		private static bool IsQualified (Lifeform parent) {
-			bool unqualified = parent._hp < parent.Init.HealThreshold
+			bool unqualified = parent._hp < parent._init.HealThreshold
 					|| parent._food < parent._foodDrain
 					|| parent._water < parent._waterDrain;
 
@@ -432,7 +406,7 @@ namespace ComplexLifeforms {
 
 		private void DeltaWater (ref int hp, ref int energy, ref int water,
 				ref DeathBy cause, ref bool excrete) {
-			if (_water > Init.Water) {
+			if (_water > _init.Water) {
 				excrete = true;
 				hp -= _hpDrain * 8;
 				energy -= _energyDrain * 8;
@@ -462,7 +436,7 @@ namespace ComplexLifeforms {
 
 		private void DeltaFood (ref int hp, ref int energy, ref int food,
 				ref DeathBy cause, ref bool excrete) {
-			if (_food > Init.Food) {
+			if (_food > _init.Food) {
 				excrete = true;
 				hp -= _hpDrain * 8;
 				energy -= _energyDrain * 8;
@@ -582,7 +556,7 @@ namespace ComplexLifeforms {
 				_energy += _energyDrain * 8;
 				++_sleepCount;
 
-				if (_energy >= Init.Energy || _hp < _hpDrain * 32) {
+				if (_energy >= _init.Energy || _hp < _hpDrain * 32) {
 					Mood.Asleep = false;
 				}
 

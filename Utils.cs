@@ -15,6 +15,7 @@ namespace ComplexLifeforms {
 		public static readonly int TIER_COUNT = Enum.GetNames(typeof(Tier)).Length;
 		public static readonly int MOOD_COUNT = Enum.GetNames(typeof(Mood)).Length;
 		public static readonly int DEATHBY_COUNT = Enum.GetNames(typeof(DeathBy)).Length;
+		public static readonly int SPECIES_COUNT = Enum.GetNames(typeof(Species)).Length;
 
 		public static Random Random = new Random();
 
@@ -71,10 +72,10 @@ namespace ComplexLifeforms {
 		public static InitWorld CSVToInitWorld (string csv) {
 			object init = new InitWorld();
 			FieldInfo[] fields = typeof(InitWorld).GetFields();
-			double[] values = Array.ConvertAll(csv.Split(','), Double.Parse);
+			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
 
 			if (fields.Length != values.Length) {
-				Console.WriteLine($"Number of values must match the number of SInitWorld properties. v:{values.Length}");
+				Console.WriteLine($"Number of values must match the number of InitWorld properties. v:{values.Length}");
 				return null;
 			}
 
@@ -88,10 +89,10 @@ namespace ComplexLifeforms {
 		public static InitLifeform CSVToInitLifeform (string csv) {
 			object init = new InitLifeform();
 			FieldInfo[] fields = typeof(InitLifeform).GetFields();
-			double[] values = Array.ConvertAll(csv.Split(','), Double.Parse);
+			double[] values = Array.ConvertAll(csv.Split(','), double.Parse);
 
 			if (fields.Length != values.Length) {
-				Console.WriteLine("Number of values must match the number of SInitLifeform properties."
+				Console.WriteLine("Number of values must match the number of InitLifeform properties."
 						+ $" v:{values.Length}");
 				return null;
 			}
@@ -105,7 +106,7 @@ namespace ComplexLifeforms {
 
 		public static string InitToCSV (InitWorld init) {
 			if (init == null) {
-				Console.WriteLine("SInitWorld was null.");
+				Console.WriteLine("InitWorld was null.");
 				return "";
 			}
 
@@ -121,7 +122,7 @@ namespace ComplexLifeforms {
 
 		public static string InitToCSV (InitLifeform init) {
 			if (init == null) {
-				Console.WriteLine("SInitLifeform was null.");
+				Console.WriteLine("InitLifeform was null.");
 				return "";
 			}
 
