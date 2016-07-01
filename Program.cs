@@ -43,7 +43,7 @@ namespace ComplexLifeforms {
 
 			Run(cLeft, cTop);
 			TopAndBottom(4, 0, false);
-			Statistics(false, true, true);
+			Statistics(false, true, false);
 
 			int cBottom = Console.CursorTop;
 			string time = Environment.TickCount - start + "ms";
@@ -79,15 +79,8 @@ namespace ComplexLifeforms {
 					if (lifeform.Age > 25 && lifeform.Age < 50
 							&& lifeform.Mood.Mood == Mood.Great
 							&& lifeform.Mood.Urge == Urge.Reproduce) {
+						lifeform.Breeding = true;
 						BROTHEL.Add(lifeform);
-					} else {
-						if (Utils.Random.Next(5) == 0) {
-							lifeform.Eat(Utils.Random.Next(5, 10) * WORLD.Init.FoodDrain * 3);
-						}
-
-						if (Utils.Random.Next(3) == 0) {
-							lifeform.Drink(Utils.Random.Next(1, 10) * WORLD.Init.WaterDrain * 3);
-						}
 					}
 
 					lifeform.Update();

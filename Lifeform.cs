@@ -39,6 +39,8 @@ namespace ComplexLifeforms {
 		/// <summary>World in which resources will be exchanged.</summary>
 		public readonly World World;
 
+		public bool Breeding;
+
 		private static int _id;
 
 		/// <summary>Constructor parameters.</summary>
@@ -57,6 +59,13 @@ namespace ComplexLifeforms {
 		private readonly int _healCost;
 		private readonly int _healAmount;
 
+		private readonly int _eatChance;
+		private readonly int _eatChanceRangeLower;
+		private readonly int _eatChanceRangeUpper;
+		private readonly int _drinkChance;
+		private readonly int _drinkChanceRangeLower;
+		private readonly int _drinkChanceRangeUpper;
+
 		private int _hp;
 		private int _energy;
 		private int _food;
@@ -72,16 +81,6 @@ namespace ComplexLifeforms {
 		private int _eatCount;
 		private int _drinkCount;
 		private int _breedCount;
-
-		/// <summary>
-		/// Constructor for making a new child based on two parents.
-		/// </summary>
-		public Lifeform (World world, Species species, MoodManager mood, int parentIdA, int parentIdB)
-				: this(world, species) {
-			ParentIdA = parentIdA;
-			ParentIdB = parentIdB;
-			Mood = mood;
-		}
 
 		public Lifeform (World world, Species species) {
 			Id = _id++;
@@ -116,6 +115,36 @@ namespace ComplexLifeforms {
 			_sleepThreshold = (int) (_energy * l.SleepThreshold);
 			_eatThreshold = (int) (_food * l.EatThreshold);
 			_drinkThreshold = (int) (_water * l.DrinkThreshold);
+
+			switch (species) {
+				case Species.Alpha:
+				case Species.Beta:
+					_eatChance = 2;
+					_eatChanceRangeLower = 5;
+					_eatChanceRangeUpper = 10;
+					_drinkChance = 2;
+					_drinkChanceRangeLower = 1;
+					_drinkChanceRangeUpper = 10;
+					break;
+				case Species.Gamma:
+					_eatChance = 1;
+					_eatChanceRangeLower = 5;
+					_eatChanceRangeUpper = 10;
+					_drinkChance = 1;
+					_drinkChanceRangeLower = 5;
+					_drinkChanceRangeUpper = 10;
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Constructor for making a new child based on two parents.
+		/// </summary>
+		private Lifeform (World world, Species species, MoodManager mood, int parentIdA, int parentIdB)
+				: this(world, species) {
+			ParentIdA = parentIdA;
+			ParentIdB = parentIdB;
+			Mood = mood;
 		}
 
 		public int Age => _age;
@@ -192,11 +221,13 @@ namespace ComplexLifeforms {
 			}
 
 			ProcessBodilyFunctions();
+			Forage();
 			Heal();
 			ProcessSleep();
 			ClampValues();
 			Mood.Update();
 
+			Breeding = false;
 			++_age;
 
 			if (_hp <= 0 || _deathBy != DeathBy.None || _pendingKill) {
@@ -359,6 +390,20 @@ namespace ComplexLifeforms {
 			}
 
 			return cause;
+		}
+
+		private void Forage () {
+			if (Mood.Asleep || Breeding) {
+				return;
+			}
+
+			if (Utils.Random.Next(_eatChance) == 0) {
+				Eat(Utils.Random.Next(_eatChanceRangeLower, _eatChanceRangeUpper) * _foodDrain * 3);
+			}
+
+			if (Utils.Random.Next(_drinkChance) == 0) {
+				Drink(Utils.Random.Next(_drinkChanceRangeLower, _drinkChanceRangeUpper) * _waterDrain * 3);
+			}
 		}
 
 		private void ProcessBodilyFunctions () {
