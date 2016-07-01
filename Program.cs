@@ -76,9 +76,8 @@ namespace ComplexLifeforms {
 						continue;
 					}
 
-					if (lifeform.Age > 25 && lifeform.Age < 50
-							&& lifeform.Mood.Mood == Mood.Great
-							&& lifeform.Mood.Urge == Urge.Reproduce) {
+					if (lifeform.Age > 25 && (lifeform.MM.Mood == Mood.Great || lifeform.MM.Mood == Mood.Good)
+							&& lifeform.MM.Urge == Urge.Reproduce) {
 						lifeform.Breeding = true;
 						BROTHEL.Add(lifeform);
 					}
@@ -107,9 +106,10 @@ namespace ComplexLifeforms {
 
 				Recount();
 				Console.SetCursorPosition(0, 2);
-				Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}|{Count[0],6}|{Count[1],6}|{Count[2],6}");
+				Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}"
+						+ $"|{Count[0],6}|{Count[1],6}|{Count[2],6}");
 			}
-			
+
 			PrintStats(cursorLeft, cursorTop, cycles, updates, maxLifeforms);
 		}
 
