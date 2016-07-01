@@ -535,6 +535,10 @@ namespace ComplexLifeforms {
 				deltaWater -= cost;
 			}
 
+			if (effectiveness == 0) {
+				return;
+			}
+
 			World.Reclaim(-deltaFood, -deltaWater);
 			Mood.Action(Urge.Heal);
 			Mood.AffectUrge(Urge.Sleep, 2);
@@ -552,7 +556,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (Mood.Asleep) {
-				_hp += _hpDrain * 2;
+				_hp -= _hpDrain;
 				_energy += _energyDrain * 8;
 				++_sleepCount;
 
