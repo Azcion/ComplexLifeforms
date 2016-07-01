@@ -53,6 +53,56 @@ namespace ComplexLifeforms {
 			return Truncate(value.ToString(), length, whitespace);
 		}
 
+		public static int[] EdgeIndexes (IEnumerable<int> array) {
+			int maxAIndex = -1;
+			int maxBIndex = -1;
+			int minAIndex = -1;
+			int minBIndex = -1;
+			int maxAValue = 0;
+			int maxBValue = 0;
+			int minAValue = MoodManager.EMOTION_CAP;
+			int minBValue = MoodManager.EMOTION_CAP;
+
+			int zeros = 0;
+			int index = 0;
+
+			foreach (int value in array) {
+				if (value == 0) {
+					++zeros;
+				}
+
+				if (value.CompareTo(maxAValue) > 0) {
+					maxBIndex = maxAIndex;
+					maxBValue = maxAValue;
+					maxAIndex = index;
+					maxAValue = value;
+				} else if (value.CompareTo(maxBValue) > 0) {
+					maxBIndex = index;
+					maxBValue = value;
+				}
+
+				if (value.CompareTo(minAValue) < 0) {
+					minBIndex = minAIndex;
+					minBValue = minAValue;
+					minAIndex = index;
+					minAValue = value;
+				} else if (value.CompareTo(minBValue) < 0) {
+					minBIndex = index;
+					minBValue = value;
+				}
+
+				++index;
+			}
+
+			if (zeros > 2) {
+				minAIndex = -1;
+				minBIndex = -1;
+			}
+
+			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
+			return indexes;
+		}
+
 		public static int MaxIndex (IEnumerable<int> array) {
 			int maxIndex = -1;
 			int maxValue = 0;
@@ -140,8 +190,8 @@ namespace ComplexLifeforms {
 			int count = URGE_COUNT + EMOTION_COUNT;
 			int threshold = 1 + count / 2 + Random.Next(-3, 4);
 
-			int[] dnaA = CreateDNA(0, count);
-			int[] dnaB = CreateDNA(1, count);
+			int[] dnaA = Enumerable.Repeat(0, count).ToArray();
+			int[] dnaB = Enumerable.Repeat(1, count).ToArray();
 			IList<int> dnaC = new List<int>();
 
 			for (int i = 0; i < threshold; ++i) {
@@ -155,10 +205,35 @@ namespace ComplexLifeforms {
 			return dnaC.ToArray();
 		}
 
-		public static int[] CreateDNA (int identifier, int count) {
-			return Enumerable.Repeat(identifier, count).ToArray();
+		public static Tier[] GenerateUrgeBias (Species? species) {
+			Tier[] urgeBias = new Tier[URGE_COUNT];
+
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				urgeBias[i] = (Tier) Random.Next(TIER_COUNT);
+			}
+
+			if (species == Species.Gamma) {
+				urgeBias[(int) Urge.Reproduce] = Tier.Ultra;
+				urgeBias[(int) Urge.Heal] = Tier.None;
+			}
+
+			return urgeBias;
 		}
 
+		public static Tier[] GenerateEmotionBias (Species? species) {
+			Tier[] emotionBias = new Tier[EMOTION_COUNT];
+
+			for (int i = 0; i < URGE_COUNT; ++i) {
+				emotionBias[i] = (Tier) Random.Next(TIER_COUNT);
+			}
+
+			if (species == Species.Gamma) {
+				emotionBias[(int) Emotion.Joy] = Tier.Ultra;
+				emotionBias[(int) Emotion.Trust] = Tier.Ultra;
+			}
+
+			return emotionBias;
+		}
 	}
 
 }

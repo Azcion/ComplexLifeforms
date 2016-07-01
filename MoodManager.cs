@@ -280,56 +280,6 @@ namespace ComplexLifeforms {
 			return data;
 		}
 
-		private static int[] EdgeIndexes (IEnumerable<int> array) {
-			int maxAIndex = -1;
-			int maxBIndex = -1;
-			int minAIndex = -1;
-			int minBIndex = -1;
-			int maxAValue = 0;
-			int maxBValue = 0;
-			int minAValue = EMOTION_CAP;
-			int minBValue = EMOTION_CAP;
-
-			int zeros = 0;
-			int index = 0;
-
-			foreach (int value in array) {
-				if (value == 0) {
-					++zeros;
-				}
-
-				if (value.CompareTo(maxAValue) > 0) {
-					maxBIndex = maxAIndex;
-					maxBValue = maxAValue;
-					maxAIndex = index;
-					maxAValue = value;
-				} else if (value.CompareTo(maxBValue) > 0) {
-					maxBIndex = index;
-					maxBValue = value;
-				}
-
-				if (value.CompareTo(minAValue) < 0) {
-					minBIndex = minAIndex;
-					minBValue = minAValue;
-					minAIndex = index;
-					minAValue = value;
-				} else if (value.CompareTo(minBValue) < 0) {
-					minBIndex = index;
-					minBValue = value;
-				}
-
-				++index;
-			}
-
-			if (zeros > 2) {
-				minAIndex = -1;
-				minBIndex = -1;
-			}
-
-			int[] indexes = {maxAIndex, maxBIndex, minAIndex, minBIndex};
-			return indexes;
-		}
-
 		private static int EmotionIntensity (int value) {
 			const int high = (int) (EMOTION_CAP * 0.75);
 			const int low = (int) (EMOTION_CAP * 0.25);
