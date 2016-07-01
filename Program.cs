@@ -9,8 +9,8 @@ namespace ComplexLifeforms {
 
 	internal static class Program {
 
-		public const int COUNT = 1000;
-		public const int SIZE = 0;
+		public const int COUNT = 500;
+		public const int SIZE = 10000000;
 
 		private const int CYCLES = 50000;
 
@@ -35,7 +35,8 @@ namespace ComplexLifeforms {
 
 			Console.Write(World.ToStringHeader() + "|alive |max   |alpha |beta  |gamma ");
 			Console.WriteLine(Truncate(seed, Console.WindowWidth - Console.CursorLeft - 1, -1));
-			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|{LIFEFORMS.Count,6}|{Count[0],6}|{Count[1],6}|{Count[2],6}");
+			Console.Write(WORLD + $"|{LIFEFORMS.Count,6}|{LIFEFORMS.Count,6}"
+					+ $"|{Count[0],6}|{Count[1],6}|{Count[2],6}");
 
 			int cTop = Console.CursorTop;
 			int cLeft = Console.CursorLeft;
@@ -43,7 +44,7 @@ namespace ComplexLifeforms {
 
 			Run(cLeft, cTop);
 			TopAndBottom(4, 0, false);
-			Statistics(false, true, false);
+			Statistics(false, true, true);
 
 			int cBottom = Console.CursorTop;
 			string time = Environment.TickCount - start + "ms";
@@ -67,10 +68,6 @@ namespace ComplexLifeforms {
 				Console.Write($"[{i}/{CYCLES}]");
 
 				foreach (Lifeform lifeform in LIFEFORMS) {
-					if (BreakIfKey(cursorLeft, cursorTop, i + 1, updates, maxLifeforms)) {
-						return;
-					}
-
 					if (!lifeform.Alive) {
 						LIMBO.Add(lifeform);
 						continue;
@@ -113,19 +110,6 @@ namespace ComplexLifeforms {
 			}
 
 			PrintStats(cursorLeft, cursorTop, cycles, updates, maxLifeforms);
-		}
-
-		private static bool BreakIfKey (int cLeft, int cTop, int cycles, int updates, int max) {
-			if (Console.KeyAvailable) {
-				switch (Console.ReadKey(true).Key) {
-					case ConsoleKey.Spacebar:
-					case ConsoleKey.Escape:
-						PrintStats(cLeft, cTop, cycles, updates, max);
-						return true;
-				}
-			}
-
-			return false;
 		}
 
 		private static void PrintStats (int cLeft , int cTop, int cycles, int updates, int max) {
