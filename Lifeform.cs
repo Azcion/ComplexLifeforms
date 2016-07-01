@@ -34,7 +34,7 @@ namespace ComplexLifeforms {
 		public readonly HashSet<string> Log;
 
 		/// <summary>Mood, urge and emotion processor.</summary>
-		public readonly MoodManager Mood;
+		public readonly MoodManager MM;
 
 		/// <summary>World in which resources will be exchanged.</summary>
 		public readonly World World;
@@ -89,7 +89,7 @@ namespace ComplexLifeforms {
 			Species = species;
 			Log = Logging ? new HashSet<string>() : null;
 			World = world;
-			Mood = new MoodManager(this);
+			MM = new MoodManager(this);
 
 			_init = SpeciesContainer.INIT[species];
 			_alive = true;
@@ -144,7 +144,7 @@ namespace ComplexLifeforms {
 				: this(world, species) {
 			ParentIdA = parentIdA;
 			ParentIdB = parentIdB;
-			Mood = mood;
+			MM = mood;
 		}
 
 		public int Age => _age;
@@ -164,12 +164,12 @@ namespace ComplexLifeforms {
 
 			for (int i = 0; i < URGE_COUNT; ++i) {
 				Lifeform parent = dna[i] == 0 ? parentA : parentB;
-				urgeBias[i] = parent.Mood.UrgeBias[i];
+				urgeBias[i] = parent.MM.UrgeBias[i];
 			}
 
 			for (int i = 0; i < EMOTION_COUNT; ++i) {
 				Lifeform parent = dna[i + URGE_COUNT] == 0 ? parentA : parentB;
-				emotionBias[i] = parent.Mood.EmotionBias[i];
+				emotionBias[i] = parent.MM.EmotionBias[i];
 			}
 
 			MoodManager mood = new MoodManager(urgeBias, emotionBias);
@@ -225,7 +225,7 @@ namespace ComplexLifeforms {
 			Heal();
 			ProcessSleep();
 			ClampValues();
-			Mood.Update();
+			MM.Update();
 
 			Breeding = false;
 			++_age;
@@ -244,7 +244,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Eat (int amount) {
-			if (!_alive || Mood.Asleep || _pendingKill) {
+			if (!_alive || MM.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -267,13 +267,13 @@ namespace ComplexLifeforms {
 			}
 
 			if (_water <= -deltaWater) {
-				Mood.AffectUrge(Urge.Drink, 1);
+				MM.AffectUrge(Urge.Drink, 1);
 				return;
 			}
 
 			World.UseFood(deltaFood);
 			World.Reclaim(0, -deltaWater);
-			Mood.Action(Urge.Eat);
+			MM.Action(Urge.Eat);
 
 			_energy += deltaEnergy;
 			_food += deltaFood;
@@ -283,8 +283,8 @@ namespace ComplexLifeforms {
 			if (_food > _init.Food) {
 				_hp -= _hpDrain * 4;
 
-				Mood.AffectUrge(Urge.Eat, -2);
-				Mood.AffectUrge(Urge.Excrete, 1);
+				MM.AffectUrge(Urge.Eat, -2);
+				MM.AffectUrge(Urge.Excrete, 1);
 			}
 
 			if (_hp <= 0 && _deathBy == DeathBy.None) {
@@ -294,7 +294,7 @@ namespace ComplexLifeforms {
 		}
 
 		public void Drink (int amount) {
-			if (!_alive || Mood.Asleep || _pendingKill) {
+			if (!_alive || MM.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -314,7 +314,7 @@ namespace ComplexLifeforms {
 			}
 
 			World.UseWater(deltaWater);
-			Mood.Action(Urge.Drink);
+			MM.Action(Urge.Drink);
 
 			_energy += deltaEnergy;
 			_water += deltaWater;
@@ -323,8 +323,8 @@ namespace ComplexLifeforms {
 			if (_water > _init.Water) {
 				_hp -= _hpDrain * 4;
 
-				Mood.AffectUrge(Urge.Drink, -2);
-				Mood.AffectUrge(Urge.Excrete, 1);
+				MM.AffectUrge(Urge.Drink, -2);
+				MM.AffectUrge(Urge.Excrete, 1);
 			}
 
 			if (_hp <= 0 && _deathBy == DeathBy.None) {
@@ -343,13 +343,13 @@ namespace ComplexLifeforms {
 
 			if (TruncateTo == 0) {
 				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
-						+ $"{s}{Mood.Urge,-9}{s}{MoodManager.EmotionName(Mood),-12}{s}{Mood.Mood,-8}"
-						+ $"{s}{_deathBy,-13}{s}{(Mood.Asleep ? "yes" : "no"),-6}";
+						+ $"{s}{MM.Urge,-9}{s}{MoodManager.EmotionName(MM),-12}{s}{MM.Mood,-8}"
+						+ $"{s}{_deathBy,-13}{s}{(MM.Asleep ? "yes" : "no"),-6}";
 			} else {
 				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}{s}{_breedCount,5}";
 
 				object[] elements = {
-						Mood.Urge, MoodManager.EmotionName(Mood), Mood.Mood, _deathBy, Mood.Asleep ? "yes" : "no"
+						MM.Urge, MoodManager.EmotionName(MM), MM.Mood, _deathBy, MM.Asleep ? "yes" : "no"
 				};
 
 				foreach (object element in elements) {
@@ -374,7 +374,7 @@ namespace ComplexLifeforms {
 			parent._food -= parent._foodDrain;
 			parent._water -= parent._waterDrain;
 			parent._breedCount++;
-			parent.Mood.Action(Urge.Reproduce);
+			parent.MM.Action(Urge.Reproduce);
 		}
 
 		private static DeathBy DeltaDeathBy (DeathBy causeW, DeathBy causeF) {
@@ -393,7 +393,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Forage () {
-			if (Mood.Asleep || Breeding) {
+			if (MM.Asleep || Breeding) {
 				return;
 			}
 
@@ -419,20 +419,20 @@ namespace ComplexLifeforms {
 			DeltaWater(ref dHp, ref dEnergy, ref dWater, ref causeW, ref excreteW);
 			DeltaFood(ref dHp, ref dEnergy, ref dFood, ref causeF, ref excreteF);
 
-			if (Mood.Asleep) {
+			if (MM.Asleep) {
 				// don't lose resources while asleep
 				dEnergy = 0;
 				dFood = 0;
 				dWater = 0;
 			} else {
 				if (excreteW) {
-					Mood.AffectUrge(Urge.Drink, -1);
-					Mood.Action(Urge.Excrete);
+					MM.AffectUrge(Urge.Drink, -1);
+					MM.Action(Urge.Excrete);
 				}
 
 				if (excreteF) {
-					Mood.AffectUrge(Urge.Eat, -1);
-					Mood.Action(Urge.Excrete);
+					MM.AffectUrge(Urge.Eat, -1);
+					MM.Action(Urge.Excrete);
 				}
 			}
 
@@ -524,7 +524,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Heal () {
-			if (_hp > _healThreshold || Mood.Asleep || _pendingKill) {
+			if (_hp > _healThreshold || MM.Asleep || _pendingKill) {
 				return;
 			}
 
@@ -533,7 +533,7 @@ namespace ComplexLifeforms {
 			int deltaWater = 0;
 			int cost = _healCost + _age;
 
-			switch (Mood.Mood) {
+			switch (MM.Mood) {
 				case Enums.Mood.Great:
 					cost -= _healCost;
 					break;
@@ -551,7 +551,7 @@ namespace ComplexLifeforms {
 			int effectiveness = cost + cost;
 
 			if (_food <= cost) {
-				Mood.AffectUrge(Urge.Eat, 1);
+				MM.AffectUrge(Urge.Eat, 1);
 
 				if (_food > 0) {
 					deltaEnergy -= cost / 2;
@@ -566,7 +566,7 @@ namespace ComplexLifeforms {
 			}
 
 			if (_water <= cost) {
-				Mood.AffectUrge(Urge.Drink, 1);
+				MM.AffectUrge(Urge.Drink, 1);
 
 				if (_water > 0) {
 					deltaEnergy -= cost / 2;
@@ -585,8 +585,8 @@ namespace ComplexLifeforms {
 			}
 
 			World.Reclaim(-deltaFood, -deltaWater);
-			Mood.Action(Urge.Heal);
-			Mood.AffectUrge(Urge.Sleep, 2);
+			MM.Action(Urge.Heal);
+			MM.AffectUrge(Urge.Sleep, 2);
 
 			_hp += effectiveness / (cost + cost) * _healAmount;
 			_energy += deltaEnergy;
@@ -600,21 +600,21 @@ namespace ComplexLifeforms {
 				return;
 			}
 
-			if (Mood.Asleep) {
+			if (MM.Asleep) {
 				_hp -= _hpDrain;
 				_energy += _energyDrain * 8;
 				++_sleepCount;
 
 				if (_energy >= _init.Energy || _hp < _hpDrain * 32) {
-					Mood.Asleep = false;
+					MM.Asleep = false;
 				}
 
 				return;
 			}
 
 			if (_energy < _sleepThreshold) {
-				Mood.Asleep = true;
-				Mood.Action(Urge.Sleep);
+				MM.Asleep = true;
+				MM.Action(Urge.Sleep);
 
 				if (_energy <= 0) {
 					_hp -= _hpDrain * 10;

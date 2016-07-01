@@ -186,7 +186,7 @@ namespace ComplexLifeforms {
 				Console.WriteLine(MoodManager.ToStringHeader());
 
 				foreach (Lifeform lifeform in lifeforms) {
-					Console.WriteLine(lifeform.Mood.ToString());
+					Console.WriteLine(lifeform.MM.ToString());
 				}
 
 				return;
@@ -210,11 +210,11 @@ namespace ComplexLifeforms {
 			Console.WriteLine(MoodManager.ToStringHeader());
 
 			for (int i = 0; i < oldest; ++i) {
-				Console.WriteLine(lifeforms[i].Mood.ToString());
+				Console.WriteLine(lifeforms[i].MM.ToString());
 			}
 
 			for (int i = youngest + 1; i > 1; --i) {
-				Console.WriteLine(lifeforms[lifeforms.Length - i].Mood.ToString());
+				Console.WriteLine(lifeforms[lifeforms.Length - i].MM.ToString());
 			}
 		}
 

@@ -16,9 +16,9 @@
 			Age = (ushort) lifeform.Age;
 
 			Species = (byte) lifeform.Species;
-			Urge = (byte) lifeform.Mood.Urge;
-			Emotion = (byte) lifeform.Mood.Emotion;
-			Mood = (byte) lifeform.Mood.Mood;
+			Urge = (byte) lifeform.MM.Urge;
+			Emotion = (byte) lifeform.MM.Emotion;
+			Mood = (byte) lifeform.MM.Mood;
 			DeathBy = (byte) lifeform.DeathBy;
 		}
 
