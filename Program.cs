@@ -15,8 +15,8 @@ namespace ComplexLifeforms {
 		private const int CYCLES = 50000;
 
 		private static readonly HashSet<Lifeform> BROTHEL = new HashSet<Lifeform>();
-		private static readonly HashSet<Lifeform> LIMBO = new HashSet<Lifeform>();
-		private static readonly HashSet<Ghost> GRAVEYARD = new HashSet<Ghost>();
+		private static readonly List<Lifeform> LIMBO = new List<Lifeform>();
+		private static readonly List<Ghost> GRAVEYARD = new List<Ghost>();
 
 		private static void Main () {
 			int start = Environment.TickCount;

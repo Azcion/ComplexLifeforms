@@ -2,7 +2,6 @@
 
 	public struct Ghost {
 
-		public readonly ushort Id;
 		public readonly ushort Age;
 
 		public readonly byte Species;
@@ -12,7 +11,6 @@
 		public readonly byte DeathBy;
 
 		public Ghost (Lifeform lifeform) {
-			Id = (ushort) lifeform.Id;
 			Age = (ushort) lifeform.Age;
 
 			Species = (byte) lifeform.Species;
