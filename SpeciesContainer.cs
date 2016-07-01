@@ -10,18 +10,21 @@ namespace ComplexLifeforms {
 		public static readonly HashSet<Lifeform> LIFEFORMS;
 		public static readonly Dictionary<Species, InitLifeform> INIT;
 
-		public static int[] Count = {
-				(int) (0.6 * Program.COUNT),
-				(int) (0.25 * Program.COUNT),
-				(int) (0.15 * Program.COUNT)
+		public static readonly int[] INIT_COUNT = {
+				(int) (0.50 * Program.COUNT),
+				(int) (0.30 * Program.COUNT),
+				(int) (0.20 * Program.COUNT)
 		};
+
+		public static int[] Count = INIT_COUNT;
 
 		private static readonly int[] COUNT_PER_SPECIES = Count;
 
-		private static readonly double[][] INIT_VALUES = {
+		private static readonly double[][] SCALES = {
+				//     hp    energ food  water hCost hAmnt hpD   enrgD foodD watrD heal  sleep eat   drink  
 				new[] {1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 0.50, 0.25, 0.50, 0.50},
-				new[] {5.00, 2.50, 5.00, 5.00, 2.00, 1.00, 2.50, 5.00, 5.00, 5.00, 0.75, 0.25, 0.75, 0.75},
-				new[] {0.25, 1.50, 0.25, 0.25, 0.10, 0.50, 0.25, 0.05, 0.10, 0.05, 0.15, 0.10, 0.50, 0.50}
+				new[] {5.00, 5.00, 5.00, 7.50, 2.00, 5.00, 2.00, 2.00, 5.00, 5.00, 0.85, 0.30, 0.75, 0.90},
+				new[] {1.50, 2.50, 0.25, 0.25, 0.10, 0.01, 0.50, 0.05, 0.10, 0.05, 0.25, 0.05, 0.25, 0.25}
 		};
 
 		static SpeciesContainer () {
@@ -56,7 +59,7 @@ namespace ComplexLifeforms {
 		}
 
 		private static InitLifeform Init (IReadOnlyList<int> bases, Species species) {
-			return new InitLifeform(bases, INIT_VALUES[(int) species]);
+			return new InitLifeform(bases, SCALES[(int) species]);
 		}
 
 	}
