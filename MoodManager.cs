@@ -53,43 +53,26 @@ namespace ComplexLifeforms {
 
 		private int _moodValue;
 
-		[SuppressMessage("ReSharper", "UnusedMember.Global")]
-		public MoodManager (IReadOnlyList<Tier> urgeBias, IReadOnlyList<Tier> emotionBias,
-				Lifeform lifeform=null)
-				: this(lifeform) {
-			if (urgeBias.Count != URGE_COUNT || emotionBias.Count != EMOTION_COUNT) {
-				Console.WriteLine($"Invalid length of values.  first:{urgeBias.Count} second:{emotionBias.Count}");
-				return;
-			}
-
-			for (int i = 0; i < URGE_COUNT; ++i) {
-				_urgeBias[i] = urgeBias[i];
-			}
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				_emotionBias[i] = emotionBias[i];
-			}
-		}
-
-		public MoodManager (Lifeform lifeform=null) {
+		public MoodManager (Lifeform lifeform=null) : this(lifeform, true) {
 			Lifeform = lifeform;
 			Asleep = false;
 
 			_urgeValues = new int[URGE_COUNT];
 			_emotionValues = new int[EMOTION_COUNT];
 
-			_urgeBias = new Tier[URGE_COUNT];
-			_emotionBias = new Tier[EMOTION_COUNT];
-
-			for (int i = 0; i < URGE_COUNT; ++i) {
-				_urgeBias[i] = (Tier) Utils.Random.Next(TIER_COUNT);
-			}
-
-			for (int i = 0; i < EMOTION_COUNT; ++i) {
-				_emotionBias[i] = (Tier) Utils.Random.Next(TIER_COUNT);
-			}
-
 			Update();
+		}
+
+		public MoodManager (Tier[] urgeBias, Tier[] emotionBias, Lifeform lifeform=null) : this(lifeform) {
+			_urgeBias = urgeBias;
+			_emotionBias = emotionBias;
+		}
+
+		private MoodManager (Lifeform lifeform, bool generateBias) {
+			if (generateBias) {
+				_urgeBias = GenerateUrgeBias(lifeform?.Species);
+				_emotionBias = GenerateEmotionBias(lifeform?.Species);
+			}
 		}
 
 		/// <summary>Represents the current general mood.</summary>
