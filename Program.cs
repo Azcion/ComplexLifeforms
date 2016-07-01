@@ -20,7 +20,7 @@ namespace ComplexLifeforms {
 
 		private static void Main () {
 			int start = Environment.TickCount;
-			int seed = 1;//start;
+			int seed = start;
 
 			Utils.Random = new Random(seed);
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
