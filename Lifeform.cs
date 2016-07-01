@@ -34,6 +34,7 @@ namespace ComplexLifeforms {
 		public readonly HashSet<string> Log;
 
 		/// <summary>Mood, urge and emotion processor.</summary>
+		[SuppressMessage ("ReSharper", "InconsistentNaming")]
 		public readonly MoodManager MM;
 
 		/// <summary>World in which resources will be exchanged.</summary>

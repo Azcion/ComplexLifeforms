@@ -9,7 +9,7 @@ namespace ComplexLifeforms {
 
 	internal static class Program {
 
-		public const int COUNT = 5000;
+		public const int COUNT = 1000;
 		public const int SIZE = 0;
 
 		private const int CYCLES = 50000;
@@ -21,8 +21,8 @@ namespace ComplexLifeforms {
 		private static void Main () {
 			int start = Environment.TickCount;
 			int seed = 1;//start;
-			Utils.Random = new Random(seed);
 
+			Utils.Random = new Random(seed);
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
 			World.Separator = '|';
 			World.Extended = true;
@@ -76,8 +76,10 @@ namespace ComplexLifeforms {
 						continue;
 					}
 
-					if (lifeform.Age > 25 && (lifeform.MM.Mood == Mood.Great || lifeform.MM.Mood == Mood.Good)
-							&& lifeform.MM.Urge == Urge.Reproduce) {
+					if (lifeform.Age > 20
+							&& (lifeform.MM.Mood == Mood.Great || lifeform.MM.Mood == Mood.Good)
+							&& lifeform.MM.Urge == Urge.Reproduce
+							&& 2 * INIT_COUNT[(int) lifeform.Species] > Count[(int) lifeform.Species]) {
 						lifeform.Breeding = true;
 						BROTHEL.Add(lifeform);
 					}
