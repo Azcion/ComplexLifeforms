@@ -19,7 +19,7 @@ namespace ComplexLifeforms {
 		private int _foodUseCount;
 		private int _waterUseCount;
 
-		public World (int size, double foodScale =.1, double waterScale=.4,
+		public World (int size, double foodScale=.1, double waterScale=.4,
 				int baseHp=1000, int baseEnergy=1000,
 				int baseFood=1000, int baseWater=1000,
 				int healCost=50, int healAmount=100,

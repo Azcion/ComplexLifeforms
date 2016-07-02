@@ -27,20 +27,20 @@ namespace ComplexLifeforms {
 				new[] {1.50, 2.50, 0.25, 0.25, 0.10, 0.01, 0.50, 0.05, 0.10, 0.05, 0.25, 0.05, 0.25, 0.25}
 		};
 
+		private static readonly int[][] CHANCES = {
+				//     eat       drink
+				new[] {2, 5, 10, 2, 1, 10},
+				new[] {2, 5, 10, 2, 1, 10},
+				new[] {1, 5, 10, 1, 5, 10}
+		};
+
 		static SpeciesContainer () {
 			WORLD = new World(Program.SIZE);
 			LIFEFORMS = new HashSet<Lifeform>();
 			INIT = new Dictionary<Species, InitLifeform>();
-
-			int[] bases = {
-					WORLD.Init.BaseHp,
-					WORLD.Init.BaseEnergy,
-					WORLD.Init.BaseFood,
-					WORLD.Init.BaseWater
-			};
 			
 			foreach (Species species in Enum.GetValues(typeof(Species))) {
-				INIT.Add(species, Init(bases, species));
+				INIT.Add(species, Init(WORLD.Init, (int) species));
 
 				for (int i = 0; i < COUNT_PER_SPECIES[(int) species]; ++i) {
 					LIFEFORMS.Add(new Lifeform(WORLD, species));
@@ -58,8 +58,8 @@ namespace ComplexLifeforms {
 			Count = count;
 		}
 
-		private static InitLifeform Init (IReadOnlyList<int> bases, Species species) {
-			return new InitLifeform(bases, SCALES[(int) species]);
+		private static InitLifeform Init (InitWorld bases, int species) {
+			return new InitLifeform(bases, SCALES[species], CHANCES[species]);
 		}
 
 	}

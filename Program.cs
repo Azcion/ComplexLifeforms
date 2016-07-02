@@ -52,7 +52,6 @@ namespace ComplexLifeforms {
 			Console.SetCursorPosition(cLeft, cTop + 1);
 			Console.WriteLine(Truncate(time, Console.WindowWidth - Console.CursorLeft - 1, -1));
 			Console.SetCursorPosition(0, cBottom);
-			Console.ReadLine();
 		}
 
 		private static void Run (int cursorLeft, int cursorTop) {
