@@ -30,7 +30,6 @@ namespace ComplexLifeforms {
 		private static readonly int[][] CHANCES = {
 				//     eat       drink
 				new[] {2, 5, 10, 2, 1, 10},
-				new[] {2, 5, 10, 2, 1, 10},
 				new[] {1, 5, 10, 1, 5, 10}
 		};
 
