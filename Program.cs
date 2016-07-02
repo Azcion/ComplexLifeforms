@@ -12,11 +12,25 @@ namespace ComplexLifeforms {
 		public const int COUNT = 500;
 		public const int SIZE = 10000000;
 
-		private const int CYCLES = 50000;
+		private const int CYCLES = 100000;
+		private const int PSTAT_CYCLE = 5000;
+
+		private const bool DO_PRIMARY = false;
+		private const bool DO_SECONDARY = true;
+		private const bool DO_EXTRA = false;
+
+		private const int IDX_A = DO_PRIMARY ? 2 : 0;
+		private const int IDX_B = DO_PRIMARY ? 3 : 1;
 
 		private static readonly HashSet<Lifeform> BROTHEL = new HashSet<Lifeform>();
 		private static readonly List<Lifeform> LIMBO = new List<Lifeform>();
 		private static readonly List<Ghost> GRAVEYARD = new List<Ghost>();
+
+		private static readonly List<List<int[]>> STATS = new List<List<int[]>>();
+		private static readonly List<List<int>> AGES = new List<List<int>>();
+		private static readonly int[] DEATHS = new int[SPECIES_COUNT];
+
+		private static int _totalDeaths;
 
 		private static void Main () {
 			int start = Environment.TickCount;
@@ -25,7 +39,7 @@ namespace ComplexLifeforms {
 			Utils.Random = new Random(seed);
 			Console.Title = typeof(Program).Assembly.GetName().Version.ToString();
 			World.Separator = '|';
-			World.Extended = true;
+			World.Extended = false;
 			Lifeform.Separator = '|';
 			Lifeform.TruncateTo = 5;
 			Lifeform.Extended = true;
@@ -42,9 +56,10 @@ namespace ComplexLifeforms {
 			int cLeft = Console.CursorLeft;
 			Console.Write("\n\nProcessing cycles... ");
 
+			InitializeStatistics();
 			Run(cLeft, cTop);
 			TopAndBottom(4, 0, false);
-			Statistics(false, true, true);
+			Statistics();
 
 			int cBottom = Console.CursorTop;
 			string time = Environment.TickCount - start + "ms";
@@ -52,6 +67,7 @@ namespace ComplexLifeforms {
 			Console.SetCursorPosition(cLeft, cTop + 1);
 			Console.WriteLine(Truncate(time, Console.WindowWidth - Console.CursorLeft - 1, -1));
 			Console.SetCursorPosition(0, cBottom);
+			Console.ReadKey();
 		}
 
 		private static void Run (int cursorLeft, int cursorTop) {
@@ -59,7 +75,7 @@ namespace ComplexLifeforms {
 			int cursorCycleLeft = Console.CursorLeft;
 
 			int cycles = CYCLES;
-			int updates = 0;
+			long updates = 0;
 			int maxLifeforms = COUNT;
 
 			for (int i = 0; i < CYCLES; ++i) {
@@ -102,16 +118,21 @@ namespace ComplexLifeforms {
 					maxLifeforms = LIFEFORMS.Count;
 				}
 
+				if (i % PSTAT_CYCLE == 0) {
+					PartialStatistics();
+				}
+
 				Recount();
 				Console.SetCursorPosition(0, 2);
 				Console.WriteLine(WORLD + $"|{LIFEFORMS.Count,6}|{maxLifeforms,6}"
 						+ $"|{Count[0],6}|{Count[1],6}|{Count[2],6}");
 			}
 
+			PartialStatistics();
 			PrintStats(cursorLeft, cursorTop, cycles, updates, maxLifeforms);
 		}
 
-		private static void PrintStats (int cLeft , int cTop, int cycles, int updates, int max) {
+		private static void PrintStats (int cLeft , int cTop, int cycles, long updates, int max) {
 			Console.SetCursorPosition(0, 3);
 			Console.Write("                                                    ");
 			Console.SetCursorPosition(cLeft, cTop);
@@ -203,41 +224,59 @@ namespace ComplexLifeforms {
 			}
 		}
 
-		private static void Statistics (bool primary, bool secondary, bool extra) {
-			List<List<int[]>> species = new List<List<int[]>>();
-			List<List<int>> ages = new List<List<int>>();
-			int[] deaths = new int[SPECIES_COUNT];
-
+		private static void InitializeStatistics () {
 			for (int i = 0; i < SPECIES_COUNT; ++i) {
-				List<int[]> stats = new List<int[]> {
-					new int[URGE_COUNT],
-					new int[EMOTION_COUNT],
-					new int[MOOD_COUNT],
-					new int[DEATHBY_COUNT]
-				};
+				if (DO_PRIMARY || DO_SECONDARY) {
+					List<int[]> stat = new List<int[]>();
 
-				species.Add(stats);
-				ages.Add(new List<int>());
+					if (DO_PRIMARY) {
+						stat.Add(new int[URGE_COUNT]);
+						stat.Add(new int[EMOTION_COUNT]);
+					}
+
+					if (DO_SECONDARY) {
+						stat.Add(new int[MOOD_COUNT]);
+						stat.Add(new int[DEATHBY_COUNT]);
+					}
+
+					STATS.Add(stat);
+				}
+				AGES.Add(new List<int>());
 			}
+		}
 
+		private static void PartialStatistics () {
 			foreach (Ghost ghost in GRAVEYARD) {
-				species[ghost.Species][0][ghost.Urge]++;
-				species[ghost.Species][1][ghost.Emotion]++;
-				species[ghost.Species][2][ghost.Mood]++;
-				species[ghost.Species][3][ghost.DeathBy]++;
-				deaths[ghost.Species]++;
-				ages[ghost.Species].Add(ghost.Age);
+				if (DO_PRIMARY) {
+					STATS[ghost.Species][0][ghost.Urge]++;
+					STATS[ghost.Species][1][ghost.Emotion]++;
+				}
+
+				if (DO_SECONDARY) {
+					STATS[ghost.Species][IDX_A][ghost.Mood]++;
+					STATS[ghost.Species][IDX_B][ghost.DeathBy]++;
+				}
+
+				if (DO_EXTRA) {
+					DEATHS[ghost.Species]++;
+					AGES[ghost.Species].Add(ghost.Age);
+				}
 			}
 
-			int length = Math.Max(4, GRAVEYARD.Count.ToString().Length);
+			_totalDeaths += GRAVEYARD.Count;
+			GRAVEYARD.Clear();
+		}
+
+		private static void Statistics () {
+			int length = Math.Max(4, _totalDeaths.ToString().Length);
 			MoodManager.TruncateTo = length;
 			MoodManager.Extended = false;
-
 			int index = 0;
-			foreach (List<int[]> stat in species) {
+
+			foreach (List<int[]> stat in STATS) {
 				Console.WriteLine($"\n#############################################\n>>{(Species) index++}:");
 
-				if (primary) {
+				if (DO_PRIMARY) {
 					Console.WriteLine("\n" + Truncate("Urges", URGE_COUNT * length + URGE_COUNT - 1, 1)
 							+ "||" + Truncate("Emotions", EMOTION_COUNT * length + EMOTION_COUNT - 1, 1));
 					Console.WriteLine(MoodManager.ToStringHeader());
@@ -253,7 +292,7 @@ namespace ComplexLifeforms {
 					Console.WriteLine();
 				}
 
-				if (secondary) {
+				if (DO_SECONDARY) {
 					Console.WriteLine("\n" + Truncate("Moods", MOOD_COUNT * length + MOOD_COUNT - 1, 1)
 							+ "||" + Truncate("Causes of death", DEATHBY_COUNT * length + DEATHBY_COUNT - 1, 1));
 
@@ -268,26 +307,26 @@ namespace ComplexLifeforms {
 					Console.WriteLine();
 				}
 
-				foreach (int m in stat[2]) {
+				foreach (int m in stat[IDX_A]) {
 					Console.Write(Truncate(m, length, -1) + "|");
 				}
 
-				foreach (int d in stat[3]) {
+				foreach (int d in stat[IDX_B]) {
 					Console.Write("|" + Truncate(d, length, -1));
 				}
 
 				Console.WriteLine();
 			}
 
-			if (!extra) {
+			if (!DO_EXTRA) {
 				return;
 			}
 
 			for (int i = 0; i < SPECIES_COUNT; ++i) {
 				Console.WriteLine($"\n#############################################\n>>{(Species) i}:");
-				Console.WriteLine("\ndead: " + deaths[i]);
+				Console.WriteLine("\ndead: " + DEATHS[i]);
 
-				double[] res = StandardDeviation(ages[i]);
+				double[] res = StandardDeviation(AGES[i]);
 				Console.WriteLine($"mean: {res[1]:0.####}\nsdev: {res[0]:0.####}");
 			}
 		}
