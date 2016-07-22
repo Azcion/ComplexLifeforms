@@ -34,6 +34,8 @@ namespace ComplexLifeforms {
 				new[] {1, 5, 10, 1, 5, 10}
 		};
 
+		private static readonly object LOCKER = new object();
+
 		static SpeciesContainer () {
 			WORLD = new World(Program.SIZE);
 			LIFEFORMS = new HashSet<Lifeform>();
@@ -49,13 +51,15 @@ namespace ComplexLifeforms {
 		}
 
 		public static void Recount () {
-			int[] count = new int[Utils.SPECIES_COUNT];
+			lock (LOCKER) {
+				int[] count = new int[Utils.SPECIES_COUNT];
 
-			foreach (Lifeform lifeform in LIFEFORMS) {
-				++count[(int) lifeform.Species];
+				foreach (Lifeform lifeform in LIFEFORMS) {
+					++count[(int) lifeform.Species];
+				}
+
+				Count = count;
 			}
-
-			Count = count;
 		}
 
 		private static InitLifeform Init (InitWorld bases, int species) {

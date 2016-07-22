@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Windows.Media;
 
 [assembly: AssemblyTitle("ComplexLifeforms")]
 [assembly: AssemblyDescription("")]
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
-[assembly: Guid("d57871f5-338e-4ced-9456-fc4164a9519c")]
+[assembly: Guid("6556b491-3c95-4545-aa98-8567bab75406")]
 
-[assembly: AssemblyVersion("0.2.2.*")]
+[assembly: DisableDpiAwareness]
+[assembly: AssemblyVersion("0.3.0.*")]
