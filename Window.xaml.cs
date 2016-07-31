@@ -39,8 +39,10 @@ namespace ComplexLifeforms {
 
 		private static readonly Stopwatch SW = new Stopwatch();
 
+		private static readonly object LOCKER = new object();
 		private static readonly int[] WIDTHS = {120, 120, 120, 85, 85, 85, 85, 85};
 		private static readonly double TOTAL_WIDTH = WIDTHS.Sum();
+
 		private static readonly string[] COLUMNS = {
 			"Size", "Food", "Water", "Alive", "Max", "Alpha", "Beta", "Gamma"
 		};
@@ -55,9 +57,6 @@ namespace ComplexLifeforms {
 			Count[1],
 			Count[2]
 		};
-
-
-		private static readonly object LOCKER = new object();
 
 		private static int _totalDeaths;
 		private static int _maxLifeforms;
@@ -79,7 +78,7 @@ namespace ComplexLifeforms {
 			style.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
 
 			for (int i = 0; i < COLUMNS.Length; ++i) {
-				DataGrid.Columns.Add(new FirstFloor.ModernUI.Windows.Controls.DataGridTextColumn {
+				WorldGrid.Columns.Add(new FirstFloor.ModernUI.Windows.Controls.DataGridTextColumn {
 					Foreground = (Brush) new BrushConverter().ConvertFromString("#FFBFBFBF"),
 					Width = (int) (WIDTHS[i] / TOTAL_WIDTH * (Width - 18)),
 					Header = COLUMNS[i],
@@ -88,8 +87,8 @@ namespace ComplexLifeforms {
 				});
 			}
 
-			DataGrid.AutoGenerateColumns = false;
-			DataGrid.ItemsSource = new List<object> {
+			WorldGrid.AutoGenerateColumns = false;
+			WorldGrid.ItemsSource = new List<object> {
 				FIRST_ROW,
 				new[] { '-', '-', '-', '-', '-', '-', '-', '-' }
 			};
@@ -247,7 +246,7 @@ namespace ComplexLifeforms {
 
 				if (SW.ElapsedMilliseconds > 100 && progress > oldProgress + 0.5) {
 					oldProgress = progress;
-					
+
 					_worker.ReportProgress((int) progress);
 					Thread.Sleep(50);
 					SW.Restart();
@@ -257,7 +256,7 @@ namespace ComplexLifeforms {
 
 		private void UpdateSize (object sender, RoutedEventArgs e) {
 			for (int i = 0; i < COLUMNS.Length; ++i) {
-				DataGrid.Columns[i].Width = (int) (WIDTHS[i] / TOTAL_WIDTH * (Width - 18));
+				WorldGrid.Columns[i].Width = (int) (WIDTHS[i] / TOTAL_WIDTH * (Width - 18));
 			}
 		}
 
@@ -274,7 +273,7 @@ namespace ComplexLifeforms {
 			Status.Text = $"Processing cycles... [{ProgressBar(e.ProgressPercentage)}]";
 
 			lock (LOCKER) {
-				DataGrid.ItemsSource = new[] {
+				WorldGrid.ItemsSource = new[] {
 					FIRST_ROW,
 					new[] {
 						WORLD.Init.Size,
