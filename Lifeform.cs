@@ -138,14 +138,9 @@ namespace ComplexLifeforms {
 			}
 
 			if (TruncateTo == 0) {
-				data += $"{s}heals{s}slept{s}eaten{s}drank{s}{"urge",-9}{s}{"emotion",-12}"
-						+ $"{s}{"mood",-8}{s}{"death by",-13}{s}sleeping";
+				data += $"{s}{"urge",-9}{s}{"emotion",-12}{s}{"mood",-8}{s}{"death by",-13}{s}sleeping";
 			} else {
-				data += $"{s}heals{s}slept{s}eaten{s}drank{s}bred ";
-
-				string[] elements = {
-					"urge", "emotion", "mood", "death by", "sleeping"
-				};
+				string[] elements = { "urge", "emotion", "mood", "death by", "sleeping" };
 
 				foreach (string element in elements) {
 					data += s + Truncate(element, TruncateTo, 1);
@@ -278,6 +273,17 @@ namespace ComplexLifeforms {
 			}
 		}
 
+		public object[] ToObjectArray () {
+			if (!Extended) {
+				return new object[] { Species, _age, _hp, _energy, _food, _water };
+			}
+
+			return new object[] {
+				Species, _age, _hp, _energy, _food, _water,
+				MM.Urge, MoodManager.EmotionName(MM), MM.Mood, _deathBy, MM.Asleep ? "Yes" : "No"
+			};
+		}
+
 		public override string ToString () {
 			char s = Separator;
 			string data = $"{Species,-7}{s}{_age,5}{s}{_hp,5}{s}{_energy,5}{s}{_food,5}{s}{_water,5}";
@@ -287,12 +293,9 @@ namespace ComplexLifeforms {
 			}
 
 			if (TruncateTo == 0) {
-				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}"
-						+ $"{s}{MM.Urge,-9}{s}{MoodManager.EmotionName(MM),-12}{s}{MM.Mood,-8}"
+				data += $"{s}{MM.Urge,-9}{s}{MoodManager.EmotionName(MM),-12}{s}{MM.Mood,-8}"
 						+ $"{s}{_deathBy,-13}{s}{(MM.Asleep ? "yes" : "no"),-6}";
 			} else {
-				data += $"{s}{_healCount,5}{s}{_sleepCount,5}{s}{_eatCount,5}{s}{_drinkCount,5}{s}{_breedCount,5}";
-
 				object[] elements = {
 						MM.Urge, MoodManager.EmotionName(MM), MM.Mood, _deathBy, MM.Asleep ? "yes" : "no"
 				};

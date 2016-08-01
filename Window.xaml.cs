@@ -11,6 +11,7 @@ using System.Windows.Media;
 using ComplexLifeforms.Enums;
 using static ComplexLifeforms.SpeciesContainer;
 using static ComplexLifeforms.Utils;
+using DataGridTextColumn = FirstFloor.ModernUI.Windows.Controls.DataGridTextColumn;
 
 namespace ComplexLifeforms {
 
@@ -40,11 +41,26 @@ namespace ComplexLifeforms {
 		private static readonly Stopwatch SW = new Stopwatch();
 
 		private static readonly object LOCKER = new object();
-		private static readonly int[] WIDTHS = {120, 120, 120, 85, 85, 85, 85, 85};
-		private static readonly double TOTAL_WIDTH = WIDTHS.Sum();
 
-		private static readonly string[] COLUMNS = {
+		private static readonly int[] WIDTHS_WORLD = {
+			120, 120, 120, 85, 85, 85, 85, 85
+		};
+
+		private static readonly int[] WIDTHS_TOP_AND_BOTTOM = {
+			60, 50, 50, 50, 50, 50, 85, 85, 75, 85, 50
+		};
+
+		private static readonly double TOTAL_WIDTH_WORLD = WIDTHS_WORLD.Sum();
+		private static readonly double TOTAL_WIDTH_TOP_AND_BOTTOM = WIDTHS_TOP_AND_BOTTOM.Sum();
+
+
+		private static readonly string[] COLUMNS_WORLD = {
 			"Size", "Food", "Water", "Alive", "Max", "Alpha", "Beta", "Gamma"
+		};
+
+		private static readonly string[] COLUMNS_TOP_AND_BOTTOM = {
+			"Species", "Age", "HP", "Energy", "Food", "Water",
+			"Urge", "Emotion", "Mood", "Death by", "Asleep"
 		};
 
 		private static readonly int[] FIRST_ROW = {
@@ -61,10 +77,14 @@ namespace ComplexLifeforms {
 		private static int _totalDeaths;
 		private static int _maxLifeforms;
 
+		private static bool _doEndCycles;
+
 		private readonly BackgroundWorker _worker = new BackgroundWorker();
 
 		public Program () {
 			InitializeComponent();
+
+			StopButton.LayoutTransform = StartButton.LayoutTransform;
 
 			_worker.WorkerSupportsCancellation = true;
 			_worker.WorkerReportsProgress = true;
@@ -77,13 +97,25 @@ namespace ComplexLifeforms {
 			Style style = new Style();
 			style.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Right));
 
-			for (int i = 0; i < COLUMNS.Length; ++i) {
-				WorldGrid.Columns.Add(new FirstFloor.ModernUI.Windows.Controls.DataGridTextColumn {
+			for (int i = 0; i < COLUMNS_WORLD.Length; ++i) {
+				WorldGrid.Columns.Add(new DataGridTextColumn {
 					Foreground = (Brush) new BrushConverter().ConvertFromString("#FFBFBFBF"),
-					Width = (int) (WIDTHS[i] / TOTAL_WIDTH * (Width - 18)),
-					Header = COLUMNS[i],
+					Width = (int) (WIDTHS_WORLD[i] / TOTAL_WIDTH_WORLD * (Width - 18)),
+					Header = COLUMNS_WORLD[i],
 					Binding = new Binding($"[{i}]"),
-					CellStyle = style
+					CellStyle = style,
+					IsReadOnly = true
+				});
+			}
+
+			for (int i = 0; i < COLUMNS_TOP_AND_BOTTOM.Length; ++i) {
+				TopAndBottomGrid.Columns.Add(new DataGridTextColumn {
+					Foreground = (Brush) new BrushConverter().ConvertFromString("#FFBFBFBF"),
+					Width = (int) (WIDTHS_TOP_AND_BOTTOM[i] / TOTAL_WIDTH_TOP_AND_BOTTOM * (Width - 18)),
+					Header = COLUMNS_TOP_AND_BOTTOM[i],
+					Binding = new Binding($"[{i}]"),
+					CellStyle = style,
+					IsReadOnly = true
 				});
 			}
 
@@ -176,18 +208,61 @@ namespace ComplexLifeforms {
 			GRAVEYARD.Clear();
 		}
 
-		private static string ProgressBar (int percentage) {
-			string result = "";
+		private static List<object[]> TopAndBottom (int best, int worst, bool data) {
+			List<object[]> itemsSource = new List<object[]>();
 
-			for (int i = 0; i < percentage; ++i) {
-				result += "|";
+			if (LIFEFORMS.Count == 0) {
+				return itemsSource;
 			}
 
-			for (int i = percentage; i < 100; ++i) {
-				result += ".";
+			Lifeform[] lifeforms = LIFEFORMS
+					.OrderByDescending(c => c.BreedCount)
+					.ThenByDescending(c => c.Age)
+					.ToArray();
+
+			if (lifeforms.Length < best + worst) {
+				foreach (Lifeform lifeform in lifeforms) {
+					itemsSource.Add(lifeform.ToObjectArray());
+				}
+
+				if (!data) {
+					return itemsSource;
+				}
+
+				Console.WriteLine();
+				Console.WriteLine(MoodManager.ToStringHeader());
+
+				foreach (Lifeform lifeform in lifeforms) {
+					Console.WriteLine(lifeform.MM.ToString());
+				}
+
+				return itemsSource;
 			}
 
-			return result;
+			for (int i = 0; i < best; ++i) {
+				itemsSource.Add(lifeforms[i].ToObjectArray());
+			}
+
+			for (int i = worst + 1; i > 1; --i) {
+				itemsSource.Add(lifeforms[lifeforms.Length - i].ToObjectArray());
+			}
+
+			if (!data) {
+				return itemsSource;
+			}
+
+			Console.WriteLine($"\n{"Urges",-29}||{"Emotions",-39}");
+			Console.WriteLine(MoodManager.ToStringHeader());
+
+			for (int i = 0; i < best; ++i) {
+				Console.WriteLine(lifeforms[i].MM.ToString());
+			}
+
+			for (int i = worst + 1; i > 1; --i) {
+				Console.WriteLine(lifeforms[lifeforms.Length - i].MM.ToString());
+			}
+
+			return itemsSource;
 		}
 
 		private void Run () {
@@ -244,25 +319,46 @@ namespace ComplexLifeforms {
 
 				double progress = (i + 1.0) / CYCLES * 100;
 
+				if (_doEndCycles) {
+					_worker.ReportProgress(100);
+					Thread.Sleep(50);
+					break;
+				}
+
 				if (SW.ElapsedMilliseconds > 100 && progress > oldProgress + 0.5) {
 					oldProgress = progress;
 
 					_worker.ReportProgress((int) progress);
 					Thread.Sleep(50);
+
 					SW.Restart();
 				}
 			}
 		}
 
-		private void UpdateSize (object sender, RoutedEventArgs e) {
-			for (int i = 0; i < COLUMNS.Length; ++i) {
-				WorldGrid.Columns[i].Width = (int) (WIDTHS[i] / TOTAL_WIDTH * (Width - 18));
+		private void Window_UpdateSize (object sender, RoutedEventArgs e) {
+			for (int i = 0; i < COLUMNS_WORLD.Length; ++i) {
+				WorldGrid.Columns[i].Width = (int) (WIDTHS_WORLD[i] / TOTAL_WIDTH_WORLD * (Width - 18));
+			}
+
+			for (int i = 0; i < COLUMNS_TOP_AND_BOTTOM.Length; ++i) {
+				TopAndBottomGrid.Columns[i].Width =
+						(int) (WIDTHS_TOP_AND_BOTTOM[i] / TOTAL_WIDTH_TOP_AND_BOTTOM * (Width - 18));
 			}
 		}
 
 		private void StartButton_Click (object sender, RoutedEventArgs e) {
-			Status.Text = $"Processing cycles... [{ProgressBar(0)}]";
+			ProgressBar.Value = 0;
+
+			StartButton.Visibility = Visibility.Collapsed;
+			StopButton.Visibility = Visibility.Visible;
+
 			_worker.RunWorkerAsync();
+		}
+
+		private void StopButton_Click (object sender, RoutedEventArgs e) {
+			StopButton.Visibility = Visibility.Collapsed;
+			_doEndCycles = true;
 		}
 
 		private void Worker_DoWork (object sender, DoWorkEventArgs e) {
@@ -270,7 +366,7 @@ namespace ComplexLifeforms {
 		}
 
 		private void Worker_ProgressChanged (object sender, ProgressChangedEventArgs e) {
-			Status.Text = $"Processing cycles... [{ProgressBar(e.ProgressPercentage)}]";
+			ProgressBar.Value = e.ProgressPercentage;
 
 			lock (LOCKER) {
 				WorldGrid.ItemsSource = new[] {
@@ -290,8 +386,13 @@ namespace ComplexLifeforms {
 		}
 
 		private void Worker_RunWorkerCompleted (object sender, RunWorkerCompletedEventArgs e) {
-			Status.Text = $"Finished!";
+			ProgressBar.Value = 100;
+
+			StopButton.Visibility = Visibility.Collapsed;
+			TopAndBottomGrid.Visibility = Visibility.Visible;
+
 			_worker.Dispose();
+			TopAndBottomGrid.ItemsSource = TopAndBottom(8, 0, false);
 		}
 
 	}
