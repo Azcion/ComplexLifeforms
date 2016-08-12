@@ -15,4 +15,4 @@ using System.Windows.Media;
 [assembly: Guid("dccbc3f4-8d02-4eb3-a97e-6dc0a660443a")]
 [assembly: DisableDpiAwareness]
 
-[assembly: AssemblyVersion("0.3.1")]
+[assembly: AssemblyVersion("0.3.12")]
